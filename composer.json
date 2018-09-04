@@ -1,0 +1,20 @@
+{
+    "name": "myzero1/yii2-log",
+    "description": "It can log by text,screenshot or both.",
+    "type": "yii2-module",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Xuanwu Qin",
+            "email": "myzero1@sina.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "yiisoft/yii2": "~2.0",
+        "myzero1/yii2-theme-adminlteiframe": "*"
+    },
+    "autoload": {
+        "psr-4": { "myzero1\\log\\": "src/" }
+    }
+}
