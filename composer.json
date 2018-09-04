@@ -12,7 +12,7 @@
     "minimum-stability": "stable",
     "require": {
         "yiisoft/yii2": "~2.0",
-        "yii2tech/spreadsheet": "~2.0*",
+        "yii2tech/spreadsheet": "~2.0",
         "jeremeamia/SuperClosure": "~1.0"
     },
     "autoload": {
