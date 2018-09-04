@@ -55,7 +55,6 @@ class Helper {
     }
 
     public static function createExportForm($dataProvider, array $columns, $name){
-
         $sql = $dataProvider->query->createCommand()->getRawSql();
         $sqlNew = serialize($sql);
 
@@ -65,8 +64,9 @@ class Helper {
         $form[] = Html::hiddenInput('export_name', $name);
         $form[] = Html::hiddenInput('export_sql', $sqlNew);
         $form[] = Html::hiddenInput('export_columns', $columnsSerialized);
+        $form[] = Html::submitButton('导出',['class' => 'btn btn-info']);
         $form[] = Html::endForm();
 
-        return $form;
+        return implode('', $form);
     }
 }
