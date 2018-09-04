@@ -55,14 +55,20 @@ class Helper {
     }
 
     public static function createExportForm($dataProvider, array $columns, $name){
-        $sql = $dataProvider->query->createCommand()->getRawSql();
-        $sqlNew = json_encode($sql);
-
+        $sqlNew = '';
+        $querySerialized = '';
+        if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
+            $querySerialized = json_encode(serialize($dataProvider->query));
+        } else {
+            $sql = $dataProvider->query->createCommand()->getRawSql();
+            $sqlNew = json_encode($sql);
+        }
         $columnsSerialized = self::serializeWithClosure($columns);
 
         $form[] = Html::beginForm(['/gdexport/export/export'], 'post');
         $form[] = Html::hiddenInput('export_name', $name);
         $form[] = Html::hiddenInput('export_sql', $sqlNew);
+        $form[] = Html::hiddenInput('export_query', $querySerialized);
         $form[] = Html::hiddenInput('export_columns', $columnsSerialized);
         $form[] = Html::submitButton('导出',['class' => 'btn btn-info']);
         $form[] = Html::endForm();

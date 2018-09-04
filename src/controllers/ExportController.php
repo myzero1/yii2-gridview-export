@@ -33,22 +33,36 @@ class ExportController extends Controller
     {
         $post = \Yii::$app->request->post();
 
-        $sql = json_decode($post['export_sql'], true);
-        $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
+        // var_dump($post['export_query']);
+        // var_dump($post['export_sql']);
+        // exit;
 
-        $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
-        $dataProviderNew = new \yii\data\SqlDataProvider([
-            'sql' => $sql,
-            'totalCount' => $count,
-            'pagination' => [
-                'pageSize' => 999999999,
-            ],
-        ]);
+        if (!empty($post['export_query'])) {
+            $query = unserialize(json_decode($post['export_query']));
+            $dataProvider = new \yii\data\ActiveDataProvider([
+                'query' => $query,
+                'pagination' => [
+                    'pageSize' => 999999999,
+                ],
+            ]);
+        } else if (!empty($post['export_sql'])) {
+            $sql = json_decode($post['export_sql'], true);
+            $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
+
+            $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
+            $dataProvider = new \yii\data\SqlDataProvider([
+                'sql' => $sql,
+                'totalCount' => $count,
+                'pagination' => [
+                    'pageSize' => 999999999,
+                ],
+            ]);
+        }
 
         $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure($post['export_columns']);
 
         $exporter = new Spreadsheet([
-            'dataProvider' => $dataProviderNew,
+            'dataProvider' => $dataProvider,
             'columns' => $columns,
         ]);
         $exporter->send(sprintf('%s-%s.xls', $post['export_name'], date('Y-m-d H:i:s')));
