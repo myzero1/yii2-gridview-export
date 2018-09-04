@@ -1,11 +1,11 @@
 <?php
 
-namespace myzero1\log\controllers;
+namespace myzero1\gdexport\controllers;
 
 use yii\web\Controller;
 
 /**
- * Default controller for the `captcha` module
+ * Default controller for the `test` module
  */
 class DefaultController extends Controller
 {

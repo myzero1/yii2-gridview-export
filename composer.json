@@ -1,5 +1,5 @@
 {
-    "name": "myzero1/yii2-log",
+    "name": "myzero1/yii2-gridview-export",
     "description": "It can log by text,screenshot or both.",
     "type": "yii2-module",
     "license": "BSD-3-Clause",
@@ -12,9 +12,10 @@
     "minimum-stability": "stable",
     "require": {
         "yiisoft/yii2": "~2.0",
-        "myzero1/yii2-theme-adminlteiframe": "*"
+        "yii2tech/spreadsheet": "*",
+        "jeremeamia/SuperClosure": "*"
     },
     "autoload": {
-        "psr-4": { "myzero1\\log\\": "src/" }
+        "psr-4": { "myzero1\\gdexport\\": "src/" }
     }
 }
