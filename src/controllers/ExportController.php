@@ -61,6 +61,8 @@ class ExportController extends Controller
 
         $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure($post['export_columns']);
 
+        // var_dump($columns);exit;
+
         $exporter = new Spreadsheet([
             'dataProvider' => $dataProvider,
             'columns' => $columns,

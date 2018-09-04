@@ -22,17 +22,27 @@ class Helper {
      **/
     public static function serializeWithClosure(array $source){
         $serializer = new Serializer();
+        $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn'];
 
         foreach ($source as $k1 => $v1) {
             if (is_array($v1)) {
                 foreach ($v1 as $k2 => $v2) {
-                    if ($v2 instanceof \Closure) {
+                    $flag = true;
+                    if ($k2 == 'class') {
+                        if (in_array($v2, $rm)) {
+                            unset($source[$k1]);
+                            $flag = false;
+                        }
+                    } else if ($flag && $v2 instanceof \Closure) {
+                        if ($k2 == 'checkboxOptions') {
+                            var_dump($v2);exit;
+                        }
                         $source[$k1][$k2] = $serializer->serialize($v2);
                     }
                 }
             }
         }
-
+var_dump($source);exit;
         return json_encode($source);
     }
 
@@ -44,8 +54,10 @@ class Helper {
         foreach ($source as $k1 => $v1) {
             if (is_array($v1)) {
                 foreach ($v1 as $k2 => $v2) {
-                    if(strpos($v2,'SuperClosure\SerializableClosure') !== false){ 
-                        $source[$k1][$k2] = $serializer->unserialize($v2);
+                    if (!is_array($v2)) {
+                        if(strpos($v2,'SuperClosure\SerializableClosure') !== false){ 
+                            $source[$k1][$k2] = $serializer->unserialize($v2);
+                        }
                     }
                 }
             }
@@ -65,7 +77,7 @@ class Helper {
         }
         $columnsSerialized = self::serializeWithClosure($columns);
 
-        $form[] = Html::beginForm(['/gdexport/export/export'], 'post');
+        $form[] = Html::beginForm(['/gdexport/export/export'], 'post', ['id' => 'gdexport']);
         $form[] = Html::hiddenInput('export_name', $name);
         $form[] = Html::hiddenInput('export_sql', $sqlNew);
         $form[] = Html::hiddenInput('export_query', $querySerialized);
