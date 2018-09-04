@@ -26,20 +26,20 @@ class Helper {
         foreach ($source as $k1 => $v1) {
             if (is_array($v1)) {
                 foreach ($v1 as $k2 => $v2) {
-                    if ($v2 instanceof Closure) {
+                    if ($v2 instanceof \Closure) {
                         $source[$k1][$k2] = $serializer->serialize($v2);
                     }
                 }
             }
         }
 
-        return serialize($source);
+        return json_encode($source);
     }
 
     public static function unserializeWithClosure($source){
         $serializer = new Serializer();
 
-        $source = unserialize($source);
+        $source = json_decode($source, true);
 
         foreach ($source as $k1 => $v1) {
             if (is_array($v1)) {
@@ -56,7 +56,7 @@ class Helper {
 
     public static function createExportForm($dataProvider, array $columns, $name){
         $sql = $dataProvider->query->createCommand()->getRawSql();
-        $sqlNew = serialize($sql);
+        $sqlNew = json_encode($sql);
 
         $columnsSerialized = self::serializeWithClosure($columns);
 

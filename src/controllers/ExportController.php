@@ -33,7 +33,7 @@ class ExportController extends Controller
     {
         $post = \Yii::$app->request->post();
 
-        $sql = unserialize($post['export_sql']);
+        $sql = json_decode($post['export_sql'], true);
         $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
 
         $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
