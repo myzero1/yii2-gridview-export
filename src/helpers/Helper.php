@@ -54,7 +54,7 @@ class Helper {
         return $source;
     }
 
-    public static function createExportForm($dataProvider, array $columns, $name){
+    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info']){
         $sqlNew = '';
         $querySerialized = '';
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
@@ -70,7 +70,7 @@ class Helper {
         $form[] = Html::hiddenInput('export_sql', $sqlNew);
         $form[] = Html::hiddenInput('export_query', $querySerialized);
         $form[] = Html::hiddenInput('export_columns', $columnsSerialized);
-        $form[] = Html::submitButton('导出',['class' => 'btn btn-info']);
+        $form[] = Html::submitButton('导出',$buttonOpts);
         $form[] = Html::endForm();
 
         return implode('', $form);
