@@ -4,6 +4,7 @@ namespace myzero1\gdexport\controllers;
 
 use yii\web\Controller;
 use yii2tech\spreadsheet\Spreadsheet;
+use yii\filters\VerbFilter;
 
 /**
  * Default controller for the `test` module
@@ -30,13 +31,13 @@ class ExportController extends Controller
      */
     public function actionExport()
     {
-        $post = Yii::$app->request->post();
+        $post = \Yii::$app->request->post();
 
-        $sql = unserialize($post['export_sql']);
+        $sql = json_decode($post['export_sql']);
         $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
 
-        $count = Yii::$app->db->createCommand($countSql)->queryScalar();
-        $dataProviderNew = new yii\data\SqlDataProvider([
+        $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
+        $dataProviderNew = new \yii\data\SqlDataProvider([
             'sql' => $sql,
             'totalCount' => $count,
             'pagination' => [
@@ -47,9 +48,9 @@ class ExportController extends Controller
         $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure($post['export_columns']);
 
         $exporter = new Spreadsheet([
-            'dataProvider' => $dataProviderNew2,
-            'columns' => $unserialized,
+            'dataProvider' => $dataProviderNew,
+            'columns' => $columns,
         ]);
-        $exporter->send(sprintf('%s-%s.xls', $post['export_name'], time()));
+        $exporter->send(sprintf('%s-%s.xls', $post['export_name'], date('Y-m-d H:i:s')));
     }
 }
