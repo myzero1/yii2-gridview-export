@@ -12,8 +12,8 @@
     "minimum-stability": "stable",
     "require": {
         "yiisoft/yii2": "~2.0",
-        "yii2tech/spreadsheet": "~2.0",
-        "jeremeamia/SuperClosure": "~1.0"
+        "yii2tech/spreadsheet": "~1.0",
+        "jeremeamia/SuperClosure": "~2.0"
     },
     "autoload": {
         "psr-4": { "myzero1\\gdexport\\": "src/" }
