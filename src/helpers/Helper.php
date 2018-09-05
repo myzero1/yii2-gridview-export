@@ -78,7 +78,7 @@ class Helper {
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
             $querySerialized = json_encode(serialize($dataProvider->query));
         } else {
-            $sql = $dataProvider->query->createCommand()->getRawSql();
+            $sql = $dataProvider->sql;
             $sqlNew = json_encode($sql);
         }
         $columnsSerialized = self::serializeWithClosure($columns);
