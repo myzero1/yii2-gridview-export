@@ -20,29 +20,34 @@ class Helper {
      * @param   void
      * @return  string
      **/
-    public static function serializeWithClosure(array $source){
-        $serializer = new Serializer();
+    public static function columsFilter(array $colums){
         $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn'];
+        $source = colums;
 
         foreach ($source as $k1 => $v1) {
             if (is_array($v1)) {
-                foreach ($v1 as $k2 => $v2) {
-                    $flag = true;
-                    if ($k2 == 'class') {
-                        if (in_array($v2, $rm)) {
+            if (array_exit_key("class", $v1)){
+              if (in_array($v1["class"], $rm)) {
                             unset($source[$k1]);
-                            $flag = false;
                         }
-                    } else if ($flag && $v2 instanceof \Closure) {
-                        if ($k2 == 'checkboxOptions') {
-                            var_dump($v2);exit;
-                        }
+            }
+               
+        return $source;
+    }
+     
+    public static function serializeWithClosure(array $source){
+        $serializer = new Serializer();
+        $source = self::columsFilter($source);
+        foreach ($source as $k1 => $v1) {
+            if (is_array($v1)) {
+                foreach ($v1 as $k2 => $v2) {
+                   if ($v2 instanceof \Closure) {
                         $source[$k1][$k2] = $serializer->serialize($v2);
                     }
                 }
             }
         }
-var_dump($source);exit;
+
         return json_encode($source);
     }
 
