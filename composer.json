@@ -1,6 +1,6 @@
 {
     "name": "myzero1/yii2-gridview-export",
-    "description": "It can log by text,screenshot or both.",
+    "description": "The export module,export gridview data to excel.use the dataProvider and columns of the gridview.",
     "type": "yii2-module",
     "license": "BSD-3-Clause",
     "authors": [
