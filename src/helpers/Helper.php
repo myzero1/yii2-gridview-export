@@ -22,17 +22,18 @@ class Helper {
      **/
     public static function columsFilter(array $colums){
         $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn'];
-        $source = colums;
 
-        foreach ($source as $k1 => $v1) {
+        foreach ($colums as $k1 => $v1) {
             if (is_array($v1)) {
-            if (array_exit_key("class", $v1)){
-              if (in_array($v1["class"], $rm)) {
-                            unset($source[$k1]);
-                        }
+                if (array_key_exists("class", $v1)){
+                    if (in_array($v1["class"], $rm)) {
+                        unset($colums[$k1]);
+                    }
+                }
             }
-               
-        return $source;
+        }
+
+        return $colums;
     }
      
     public static function serializeWithClosure(array $source){
@@ -82,7 +83,14 @@ class Helper {
         }
         $columnsSerialized = self::serializeWithClosure($columns);
 
-        $form[] = Html::beginForm(['/gdexport/export/export'], 'post', ['id' => 'gdexport']);
+        $form[] = Html::beginForm(
+            ['/gdexport/export/export'], 
+            'post', 
+            [
+                'id' => 'gdexport',
+                'style' => 'display: inline-block;',
+            ]
+        );
         $form[] = Html::hiddenInput('export_name', $name);
         $form[] = Html::hiddenInput('export_sql', $sqlNew);
         $form[] = Html::hiddenInput('export_query', $querySerialized);
