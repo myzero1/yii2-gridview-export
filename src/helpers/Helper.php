@@ -21,7 +21,7 @@ class Helper {
      * @return  string
      **/
     public static function columsFilter(array $colums){
-        $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn'];
+        $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn', 'yii\grid\SerialColumn'];
 
         foreach ($colums as $k1 => $v1) {
             if (is_array($v1)) {
