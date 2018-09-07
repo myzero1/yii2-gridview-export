@@ -72,7 +72,22 @@ class Helper {
         return $source;
     }
 
-    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info']){
+    /**
+     * Get the module's name of rbacp.
+     *
+     * 调用实例：Helper::
+     *
+     * @param   string  dataProvider
+     * @param   array   columns
+     * @param   string  name
+     * @param   array   buttonOpts    ['class' => 'btn btn-info']
+     * @param   array   url     ['/gdexport/export/export2','id' => 1]
+     * @param   string  writerType    Xls,Xlsx,Ods,Csv,Html,Tcpdf,Dompdf,Mpdf
+     * 
+     * @return  string
+     **/
+
+    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls'){
         $sqlNew = '';
         $querySerialized = '';
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
@@ -84,7 +99,7 @@ class Helper {
         $columnsSerialized = self::serializeWithClosure($columns);
 
         $form[] = Html::beginForm(
-            ['/gdexport/export/export'], 
+            $url, 
             'post', 
             [
                 'id' => 'gdexport',
@@ -95,9 +110,47 @@ class Helper {
         $form[] = Html::hiddenInput('export_sql', $sqlNew);
         $form[] = Html::hiddenInput('export_query', $querySerialized);
         $form[] = Html::hiddenInput('export_columns', $columnsSerialized);
+        $form[] = Html::hiddenInput('export_type', $writerType);
         $form[] = Html::submitButton('导出',$buttonOpts);
         $form[] = Html::endForm();
 
         return implode('', $form);
+    }
+
+    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls'){
+
+        if (!empty($exportQuery)) {
+            $query = unserialize(json_decode($exportQuery));
+            $dataProvider = new \yii\data\ActiveDataProvider([
+                'query' => $query,
+                'pagination' => [
+                    'pageSize' => 999999999,
+                ],
+            ]);
+        } else if (!empty($exportSql)) {
+            $sql = json_decode($exportSql, true);
+            $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
+
+            $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
+            $dataProvider = new \yii\data\SqlDataProvider([
+                'sql' => $sql,
+                'totalCount' => $count,
+                'pagination' => [
+                    'pageSize' => 999999999,
+                ],
+            ]);
+        }
+
+        $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure($columns);
+
+        // var_dump($columns);exit;
+
+        $exporter = new \yii2tech\spreadsheet\Spreadsheet([
+            'dataProvider' => $dataProvider,
+            'columns' => $columns,
+        ]);
+
+        $exporter->writerType = $writerType;
+        $exporter->send(sprintf('%s-%s.xls', $exportName, date('Y-m-d H:i:s')));
     }
 }
