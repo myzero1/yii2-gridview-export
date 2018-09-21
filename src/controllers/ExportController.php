@@ -29,7 +29,7 @@ class ExportController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionExport()
+    public function actionExportOld()
     {
         $post = \Yii::$app->request->post();
 
@@ -68,5 +68,24 @@ class ExportController extends Controller
             'columns' => $columns,
         ]);
         $exporter->send(sprintf('%s-%s.xls', $post['export_name'], date('Y-m-d H:i:s')));
+    }
+
+    /**
+     * Deletes an existing User2 model.
+     * If deletion is successful, the browser will be redirected to the 'index' page.
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionExport()
+    {
+        $post = \Yii::$app->request->post();
+
+        // var_dump($post['export_name']);
+        // var_dump($post['export_query']);
+        // var_dump($post['export_sql']);
+        // var_dump($post['export_columns']);
+        // var_dump($post['export_type']);
+        // exit;
+        return \myzero1\gdexport\helpers\Helper::exportSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type']);
     }
 }
