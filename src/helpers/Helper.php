@@ -83,6 +83,7 @@ class Helper {
      * @param   array   buttonOpts    ['class' => 'btn btn-info']
      * @param   array   url     ['/gdexport/export/export2','id' => 1]
      * @param   string  writerType    Xls,Xlsx,Ods,Csv,Html,Tcpdf,Dompdf,Mpdf
+     * @param   string  buttonLable
      *
      * @return  string
      **/
