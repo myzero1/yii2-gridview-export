@@ -60,4 +60,40 @@ You can use it,anywhere as following:
 
 ```
 
+Use the custom router as following:
+
+```php
+
+//----------------for controller start----------------
+
+<?php
+//......
+/**
+ * ExportController.
+ */
+class ExportController extends Controller
+{
+    //......
+    /**
+     * Realtime exporter
+     * @return mixed
+     */
+    public function actionRealtime()
+    {
+        $post = \Yii::$app->request->post();
+
+        return \myzero1\gdexport\helpers\Helper::exportSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type']);
+    }
+    //......
+?>
+
+//----------------for controller end----------------
+
+//----------------for view start----------------
+<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name, $buttonOpts = ['class' => 'btn btn-info'], ['/export/realtime'], $writerType='Xls', $buttonLable='导出');?>
+
+//----------------for view end----------------
+
+```
+
 
