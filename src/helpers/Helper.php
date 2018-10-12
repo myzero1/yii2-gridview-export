@@ -61,7 +61,7 @@ class Helper {
             if (is_array($v1)) {
                 foreach ($v1 as $k2 => $v2) {
                     if (!is_array($v2)) {
-                        if(strpos($v2,'SuperClosure\SerializableClosure') !== false){ 
+                        if(strpos($v2,'SuperClosure\SerializableClosure') !== false){
                             $source[$k1][$k2] = $serializer->unserialize($v2);
                         }
                     }
