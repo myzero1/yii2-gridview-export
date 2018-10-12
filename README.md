@@ -56,8 +56,8 @@ You can use it,anywhere as following:
 
 ```php
 
-<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, 'exportName');?>
-             
+<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name, $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出');?>
+
 ```
 
 
