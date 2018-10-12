@@ -35,7 +35,7 @@ class Helper {
 
         return $colums;
     }
-     
+
     public static function serializeWithClosure(array $source){
         $serializer = new Serializer();
         $source = self::columsFilter($source);
@@ -83,11 +83,11 @@ class Helper {
      * @param   array   buttonOpts    ['class' => 'btn btn-info']
      * @param   array   url     ['/gdexport/export/export2','id' => 1]
      * @param   string  writerType    Xls,Xlsx,Ods,Csv,Html,Tcpdf,Dompdf,Mpdf
-     * 
+     *
      * @return  string
      **/
 
-    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls'){
+    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出'){
         $sqlNew = '';
         $querySerialized = '';
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
@@ -98,29 +98,57 @@ class Helper {
         }
         $columnsSerialized = self::serializeWithClosure($columns);
 
+        $id = sprintf('gdexport-%s', $name);
+        $id = base64_encode($id);
+        $id = str_replace('+','',$id);
+        $id = str_replace('=','',$id);
+
         $form[] = Html::beginForm(
-            $url, 
-            'post', 
+            $url,
+            'post',
             [
-                'id' => 'gdexport',
+                'form-id' => $id,
                 'style' => 'display: inline-block;',
             ]
         );
-        $form[] = Html::hiddenInput('export_name', $name);
-        $form[] = Html::hiddenInput('export_sql', $sqlNew);
-        $form[] = Html::hiddenInput('export_query', $querySerialized);
-        $form[] = Html::hiddenInput('export_columns', $columnsSerialized);
-        $form[] = Html::hiddenInput('export_type', $writerType);
-        $form[] = Html::submitButton('导出',$buttonOpts);
+        $form[] = Html::hiddenInput('export_name', base64_encode($name));
+        $form[] = Html::hiddenInput('export_type', base64_encode($writerType));
+        $form[] = Html::hiddenInput('export_sql', base64_encode($sqlNew));
+        $form[] = Html::hiddenInput('export_query', base64_encode($querySerialized));
+        $form[] = Html::hiddenInput('export_columns', base64_encode($columnsSerialized));
+        // $form[] = Html::submitButton('导出',$buttonOpts);
         $form[] = Html::endForm();
+        $formStr = implode('', $form);
+        // return $formStr;
+        $formStr = str_replace("\n", '', $formStr);
 
-        return implode('', $form);
+        $js = <<<JS
+            $("html").append('$formStr');
+            $('#$id').click(function(){
+                console.log($('form[form-id="$id"]'));
+                $('form[form-id="$id"]').submit();
+            });
+JS;
+
+        \Yii::$app->view->registerJs($js);
+
+        $buttonOpts['class'] = $buttonOpts['class'] . ' gdexport';
+        $buttonOpts['id'] = $id;
+        return Html::tag('div', $buttonLable, $buttonOpts);
+
     }
 
     public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls'){
+        if ($exportName != 'exportName') {
+            $exportName = base64_decode($exportName);
+        }
+
+        if ($writerType != 'Xls') {
+            $writerType = base64_decode($writerType);
+        }
 
         if (!empty($exportQuery)) {
-            $query = unserialize(json_decode($exportQuery));
+            $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
                 'query' => $query,
                 'pagination' => [
@@ -128,7 +156,7 @@ class Helper {
                 ],
             ]);
         } else if (!empty($exportSql)) {
-            $sql = json_decode($exportSql, true);
+            $sql = json_decode(base64_decode($exportSql), true);
             $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
 
             $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
@@ -141,9 +169,7 @@ class Helper {
             ]);
         }
 
-        $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure($columns);
-
-        // var_dump($columns);exit;
+        $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
 
         $exporter = new \yii2tech\spreadsheet\Spreadsheet([
             'dataProvider' => $dataProvider,
