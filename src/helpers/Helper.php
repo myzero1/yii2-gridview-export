@@ -140,7 +140,7 @@ JS;
 
     }
 
-    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'xlsx', $timeout = 600){
+    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls', $timeout = 600){
         if ($exportName != 'exportName') {
             $exportName = base64_decode($exportName);
         }
