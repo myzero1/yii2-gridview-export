@@ -295,7 +295,8 @@ JS;
                     echo implode("\t",$tmp)."\n";
                 }
             }
-        }   
+        }
+        exit();
     }
 
     public static function noScientificNotation($value){
