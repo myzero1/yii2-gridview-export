@@ -56,7 +56,10 @@ You can use it,anywhere in view as following:
 
 ```php
 
-<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出');?>
+<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出', $timeout = 600);?>
+
+// 推荐使用下面这种方式,不会内存溢出
+// <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/big-export','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600);?>
 
 ```
 ### Use custom router
@@ -80,8 +83,14 @@ class ExportController extends Controller
     {
         $post = \Yii::$app->request->post();
 
-        return \myzero1\gdexport\helpers\Helper::exportSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type']);
+        return \myzero1\gdexport\helpers\Helper::exportSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type'], $post['export_timeout']);
+
+        // 推荐使用下面这种方式,不会内存溢出
+        // return \myzero1\gdexport\helpers\Helper::exportSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type'], $post['export_timeout']);
     }
+
+    //......
+}
 ?>
 
 ```
@@ -89,6 +98,6 @@ class ExportController extends Controller
 Use the custom router in view, as following:
 
 ```php
-<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], ['/export/realtime'], $writerType='Xls', $buttonLable='导出');?>
+<?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], ['/export/realtime'], $writerType='Xls', $buttonLable='导出', $timeout = 600);?>
 
 ```

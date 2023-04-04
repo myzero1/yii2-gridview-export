@@ -88,7 +88,7 @@ class Helper {
      * @return  string
      **/
 
-    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出'){
+    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出', $timeout=600){
         $sqlNew = '';
         $querySerialized = '';
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
@@ -117,6 +117,7 @@ class Helper {
         $form[] = Html::hiddenInput('export_sql', base64_encode($sqlNew));
         $form[] = Html::hiddenInput('export_query', base64_encode($querySerialized));
         $form[] = Html::hiddenInput('export_columns', base64_encode($columnsSerialized));
+        $form[] = Html::hiddenInput('export_timeout', base64_encode($timeout));
         // $form[] = Html::submitButton('导出',$buttonOpts);
         $form[] = Html::endForm();
         $formStr = implode('', $form);
@@ -139,14 +140,19 @@ JS;
 
     }
 
-    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls'){
+    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls', $timeout = 600){
         if ($exportName != 'exportName') {
             $exportName = base64_decode($exportName);
         }
-
         if ($writerType != 'Xls') {
             $writerType = base64_decode($writerType);
         }
+        if ($timeout != 600) {
+            $timeout = base64_decode($timeout);
+        }
+
+        \Yii::$app->session->close();
+        set_time_limit($timeout);
 
         if (!empty($exportQuery)) {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
@@ -179,5 +185,130 @@ JS;
 
         $exporter->writerType = $writerType;
         $exporter->send(sprintf('%s-%s.xls', $exportName, date('Y-m-d H:i:s')));
+    }
+
+    public static function exportBigSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'xlsx', $timeout = 600){
+        if ('Content-type' != '') {
+            if ($exportName != 'exportName') {
+                $exportName = base64_decode($exportName);
+            }
+            if ($writerType != 'xlsx') {
+                $writerType = base64_decode($writerType);
+            }
+            if ($timeout != 600) {
+                $timeout = base64_decode($timeout);
+            }
+
+            $writerType='xlsx';
+
+            \Yii::$app->session->close();
+            set_time_limit($timeout);
+            $filename = sprintf('%s_%s.%s',$exportName, date('YmdHis'),$writerType);
+    
+            // https://www.cnblogs.com/jzxy/articles/16779621.html
+            header("Content-type:application/octet-stream");
+            header("Accept-Ranges:bytes");
+            header("Content-type:application/vnd.ms-excel,charset=UTF8-Bom");
+            header("Content-Disposition:attachment;filename=" . $filename);
+            header("Pragma: no-cache");
+            header("Expires: 0");
+        }
+        
+        $values=[];
+        if ('headers'!='') {
+            $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+    
+            $headers=[];
+            foreach ($columns as $k => $v) {
+                if (is_string($v)) {
+                    $headers[] = $v;
+                    $values[] = $v;
+                } else if (is_array($v)) {
+                    if (isset($v['header'])) {
+                        $headers[] = $v['header'];
+                    } else {
+                        $headers[] = isset($v['attribute'])?$v['attribute']:'';
+                    }
+    
+                    if (isset($v['value'])) {
+                        $values[] = $v['value'];
+                    } else if (isset($v['attribute'])) {
+                        $values[] = $v['attribute'];
+                    } else {
+                        $values[] = '';
+                    }
+                }
+            }
+
+            echo implode("\t",$headers)."\n";
+        }
+
+        if ('rows'!='') {
+            $pageSize = 1000;
+            // $pageSize = 3;
+            $page = 0;
+            $sql='';
+
+            if (!empty($exportQuery)) {
+                $query = unserialize(json_decode(base64_decode($exportQuery)));
+                $sql=$query->createCommand()->getRawSql();
+            } else if (!empty($exportSql)) {
+                $sql = json_decode(base64_decode($exportSql), true);
+            }
+
+            if ($sql=='') {
+                throw new \Exception('sql is empty');
+            }
+
+            $go=true;
+            while ($go) {
+                $sqlTmp=sprintf(
+                    '%s limit %d,%d',
+                    $sql,
+                    $page*$pageSize,
+                    $pageSize+1
+                );
+
+                $go=false;
+                $page=$page+1;
+
+                $all=\Yii::$app->db->createCommand($sqlTmp)->queryAll();
+                foreach ($all as $k => $r) {
+                    if ($k>=$pageSize) {
+                        $go=true;
+                        break;
+                    }
+
+                    $tmp=[];
+                    foreach ($values as $k => $v) {
+                        $t='';
+                        if(is_callable($v)){
+                            $t = $v($r);
+                        }else{
+                            $t = $r[$v];
+                        }
+
+                        $t=self::noScientificNotation($t);
+
+                        $tmp[] = $t;
+                    }
+                    echo implode("\t",$tmp)."\n";
+                }
+            }
+        }
+        exit();
+    }
+
+    public static function noScientificNotation($value){
+        // $value=12345678;
+        // $value=123456789011;
+        $value=$value . '';
+        $pattern='/^\d{9,}$/';
+        if (preg_match($pattern, $value)){
+            // 中文空格占位符
+            $value=$value.' ';
+        }
+
+        return $value;
     }
 }
