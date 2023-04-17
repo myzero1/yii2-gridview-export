@@ -316,25 +316,42 @@ JS;
         $url, 
         $params,
         $timeout=600,
-        $setProvider=function($ret){
-            if ($ret['code'] == 200) {
-                $data = json_decode($ret['data'], true);
-                if (isset($data['code']) && $data['code'] == 735200) {
-                    return new \myzero1\gdexport\helpers\RemoteArrayDataProvider([
-                        'allModels' => $data['data']['items'],
-                        'totalCount' => $data['data']['total'],
-                        // 'key' => 'Review_ID',
-                        'pagination' => [
-                            'pageSize' => $data['data']['pageSize'],
-                        ],
-                    ]);
-                }
-            }
-        }
+        $itemsKeys=['data','items'],
+        $totalKeys=['data','total'],
+        $pageSizeKeys=['data','page_size']
+        // $dataProviderKey='id'
     ){
         $ret = self::HttpCurl($url, $params, 'get',$timeout);
-        $provider = $setProvider($ret);
-        return $provider;
+        if ($ret['code'] == 200) {
+            $data = json_decode($ret['data'], true);
+
+            $tmp=$data;
+            foreach ($itemsKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $items=$tmp;
+
+            $tmp=$data;
+            foreach ($totalKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $total=$tmp;
+
+            $tmp=$data;
+            foreach ($pageSizeKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $size=$tmp;
+
+            return new \myzero1\gdexport\helpers\RemoteArrayDataProvider([
+                'allModels' => $items,
+                'totalCount' => $total,
+                'pagination' => [
+                    'pageSize' => $size,
+                ],
+                // 'key' => $dataProviderKey,
+            ]);
+        }
     }
 
     public static  function HttpCurl($url, $param, $method = "get", $timeout = 30)
