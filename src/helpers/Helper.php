@@ -311,4 +311,95 @@ JS;
 
         return $value;
     }
+
+    public static function remoteArrayDataProvider(
+        $url, 
+        $params,
+        $timeout=600,
+        $itemsKeys=['data','items'],
+        $totalKeys=['data','total'],
+        $pageSizeKeys=['data','page_size']
+        // $dataProviderKey='id'
+    ){
+        $ret = self::HttpCurl($url, $params, 'get',$timeout);
+        if ($ret['code'] == 200) {
+            $data = json_decode($ret['data'], true);
+
+            $tmp=$data;
+            foreach ($itemsKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $items=$tmp;
+
+            $tmp=$data;
+            foreach ($totalKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $total=$tmp;
+
+            $tmp=$data;
+            foreach ($pageSizeKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $size=$tmp;
+
+            return new \myzero1\gdexport\helpers\RemoteArrayDataProvider([
+                'allModels' => $items,
+                'totalCount' => $total,
+                'pagination' => [
+                    'pageSize' => $size,
+                ],
+                // 'key' => $dataProviderKey,
+            ]);
+        }
+    }
+
+    public static  function HttpCurl($url, $param, $method = "get", $timeout = 30)
+    {
+        try {
+            if (strtolower($method) == 'get') {
+                $url = $url . '?' . http_build_query($param);
+            }
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            if (strtolower($method) == 'post') {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
+            }
+
+            $result = curl_exec($ch);
+
+            $rsp = [
+                'code' => 200,
+                'msg' => 'ok',
+                'data' => '',
+            ];
+
+            //获取返回状态 200为正常
+            $http_status = curl_getinfo($ch);
+            if (isset($http_status['http_code'])) {
+                if ($http_status['http_code'] == "200") {
+                    $rsp['data'] = $result;
+                } else {
+                    $rsp['code'] = $http_status['http_code'];
+                    $rsp['msg'] = sprintf('http访问错误:%s', $http_status['http_code']);
+                    $rsp['data'] = curl_error($ch);
+                }
+            } else {
+                $rsp['code'] = 500;
+                $rsp['msg'] = 'curl执行错误';
+                $rsp['data'] = curl_error($ch);
+            }
+        } catch (\Exception $e) {
+            $rsp['code'] = 500;
+            $rsp['msg'] = $e->getMessage();
+        }
+
+        return $rsp;
+    }
 }
