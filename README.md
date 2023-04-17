@@ -100,4 +100,14 @@ Use the custom router in view, as following:
 ```php
 <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], ['/export/realtime'], $writerType='Xls', $buttonLable='导出', $timeout = 600);?>
 
+
+$provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
+    $url, 
+    $params,
+    $timeout=600,
+    $itemsKeys=['data','items'],
+    $totalKeys=['data','total'],
+    $pageSizeKeys=['data','page_size']
+);
+
 ```
