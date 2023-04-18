@@ -109,21 +109,23 @@ class ExportController extends Controller
             $exportName=$post['export_name'], 
             $timeout=$post['export_timeout'],
             $pw=\Yii::$app->user->identity->username,
+            // $filePath='t1'
             $filePath=''
         );
     }
 
-    public function actionBigExport()
+    public function actionExportStream()
     {
         $post = \Yii::$app->request->post();
-
-        // var_dump($post['export_name']);
-        // var_dump($post['export_query']);
-        // var_dump($post['export_sql']);
-        // var_dump($post['export_columns']);
-        // var_dump($post['export_type']);
-        // var_dump($post['export_timeout']);
-        // exit;
-        return \myzero1\gdexport\helpers\Helper::exportBigSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type'], $timeout = $post['export_timeout']);
+        return \myzero1\gdexport\helpers\Helper::exportFile(
+            $post['export_columns'], 
+            $exportQuery=$post['export_query'], 
+            $exportSql=$post['export_sql'], 
+            $exportName=$post['export_name'], 
+            $timeout=$post['export_timeout'],
+            $pw=\Yii::$app->user->identity->username,
+            // $filePath='t1'
+            $filePath=''
+        );
     }
 }
