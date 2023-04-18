@@ -5,6 +5,7 @@ namespace myzero1\gdexport\helpers;
 use yii\helpers\Html;
 use SuperClosure\Serializer;
 use yii2tech\csvgrid\CsvGrid;
+use ZipArchive;
 
 /**
  * The helpers for yii2-gridview-export.
@@ -78,7 +79,7 @@ class Helper {
 
     }
 
-    public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $filePath=''){
+    public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $filePath='', $pw=''){
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
@@ -96,6 +97,13 @@ class Helper {
                 ],
             ]);
         }
+        $GridCnf=[
+            'dataProvider' => $dataProvider,
+            'maxEntriesPerFile' => 60000 + 1, // limit max rows per single file
+            'resultConfig' => [
+                'forceArchive' => true // always archive the results
+            ],
+        ];
 
         if ($exportName != 'exportName') {
             $exportName = base64_decode($exportName);
@@ -108,17 +116,31 @@ class Helper {
         \Yii::$app->session->close();
         set_time_limit($timeout);
         
-        $GridCnf=[
-            'dataProvider' => $dataProvider,
-            'maxEntriesPerFile' => 60000 + 1, // limit max rows per single file
-            'resultConfig' => [
-                'forceArchive' => true // always archive the results
-            ],
-        ];
         if ($columns != '') {
             $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
         }
         $GridCnf['columns']=$columns;
+
+        if ($pw!='') {
+            $GridCnf['resultConfig']['archiver']=function (array $files, $dirName) {
+                $archiveFileName = $dirName . DIRECTORY_SEPARATOR . 'data' . '.zip';
+
+                $zip = new ZipArchive();
+                $zipStatus = $zip->open($archiveFileName, ZipArchive::CREATE);
+                if ($zipStatus !== true) {
+                    throw new \Exception('Unable to create ZIP archive: error#' . $zipStatus);
+                }
+        
+                foreach ($files as $file) {
+                    $zip->addFile($file, basename($file));
+                }
+        
+                $zip->close();
+        
+                return $archiveFileName;
+            };
+        }
+
         $exporter = new CsvGrid($GridCnf);
         if ($filePath) {
             $exporter->export()->saveAs($filePath.DIRECTORY_SEPARATOR.$fileName);
