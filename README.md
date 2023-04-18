@@ -111,3 +111,17 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
 );
 
 ```
+
+
+### Rebuild 2.0.0
+
+|导出方式|优点|缺点|保护|
+|---|---|---|---|
+|文件(send,save)|可以压缩传输|反应慢（需要完全导出为文件后再下载）|是要zip加密压缩|
+|数据流(stream)|反应快（边生成边下载）|下载时间长不能压缩|使用web自动到的用户验证系统|
+
+
+```
+基于 https://packagist.org/packages/yii2tech/csv-grid 进行加工完善
+
+```
