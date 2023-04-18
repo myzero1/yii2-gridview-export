@@ -78,7 +78,7 @@ class Helper {
 
     }
 
-    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls', $timeout = 600){
+    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls', $timeout = 600,$filePath=''){
         if ($exportName != 'exportName') {
             $exportName = base64_decode($exportName);
         }
@@ -121,7 +121,12 @@ class Helper {
                 'forceArchive' => true // always archive the results
             ],
         ]);
-        $exporter->export()->send($fileName);
+
+        if ($filePath) {
+            $exporter->export()->saveAs($filePath.DIRECTORY_SEPARATOR.$fileName);
+        } else {
+            $exporter->export()->send($fileName);
+        }
     }
 
     public static function exportBigSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'xlsx', $timeout = 600){
