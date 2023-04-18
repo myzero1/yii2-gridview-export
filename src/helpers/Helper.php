@@ -78,21 +78,8 @@ class Helper {
 
     }
 
-    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls', $timeout = 600,$filePath=''){
-        if ($exportName != 'exportName') {
-            $exportName = base64_decode($exportName);
-        }
-        if ($writerType != 'Xls') {
-            $writerType = base64_decode($writerType);
-        }
-        if ($timeout != 600) {
-            $timeout = base64_decode($timeout);
-        }
-
-        \Yii::$app->session->close();
-        set_time_limit($timeout);
-
-        if (!empty($exportQuery)) {
+    public static function exportSend($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $filePath=''){
+        if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
                 'query' => $query,
@@ -100,7 +87,7 @@ class Helper {
                     'pageSize' => 1000, // export batch size
                 ],
             ]);
-        } else if (!empty($exportSql)) {
+        } else if ($exportSql!='') {
             $sql = json_decode(base64_decode($exportSql), true);
             $dataProvider = new \yii\data\SqlDataProvider([
                 'sql' => $sql,
@@ -110,18 +97,29 @@ class Helper {
             ]);
         }
 
-        $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+        if ($exportName != 'exportName') {
+            $exportName = base64_decode($exportName);
+        }
         $fileName = sprintf('%s-%s.zip', $exportName, date('Y-m-d H:i:s'));
 
-        $exporter = new CsvGrid([
+        if ($timeout != 600) {
+            $timeout = base64_decode($timeout);
+        }
+        \Yii::$app->session->close();
+        set_time_limit($timeout);
+        
+        $GridCnf=[
             'dataProvider' => $dataProvider,
-            'columns' => $columns,
             'maxEntriesPerFile' => 60000 + 1, // limit max rows per single file
             'resultConfig' => [
                 'forceArchive' => true // always archive the results
             ],
-        ]);
-
+        ];
+        if ($columns != '') {
+            $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+        }
+        $GridCnf['columns']=$columns;
+        $exporter = new CsvGrid($GridCnf);
         if ($filePath) {
             $exporter->export()->saveAs($filePath.DIRECTORY_SEPARATOR.$fileName);
         } else {
