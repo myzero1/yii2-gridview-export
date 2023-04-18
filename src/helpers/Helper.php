@@ -5,7 +5,7 @@ namespace myzero1\gdexport\helpers;
 use yii\helpers\Html;
 use SuperClosure\Serializer;
 use yii2tech\csvgrid\CsvGrid;
-use ZipArchive;
+use \PhpZip\ZipFile;
 
 /**
  * The helpers for yii2-gridview-export.
@@ -122,21 +122,18 @@ class Helper {
         $GridCnf['columns']=$columns;
 
         if ($pw!='') {
+            \Yii::$app->params['yii2-gridview-export_pw']=$pw;
             $GridCnf['resultConfig']['archiver']=function (array $files, $dirName) {
                 $archiveFileName = $dirName . DIRECTORY_SEPARATOR . 'data' . '.zip';
 
-                $zip = new ZipArchive();
-                $zipStatus = $zip->open($archiveFileName, ZipArchive::CREATE);
-                if ($zipStatus !== true) {
-                    throw new \Exception('Unable to create ZIP archive: error#' . $zipStatus);
-                }
-        
-                foreach ($files as $file) {
-                    $zip->addFile($file, basename($file));
-                }
-        
-                $zip->close();
-        
+                $zipFile = new ZipFile();
+                $zipFile
+                    ->addDir($dirName)
+                    ->setPassword(\Yii::$app->params['yii2-gridview-export_pw'])
+                    ->saveAsFile($archiveFileName)
+                    ->close();
+
+                $zipFile->close();
                 return $archiveFileName;
             };
         }
