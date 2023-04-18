@@ -77,7 +77,7 @@ class ExportController extends Controller
      * @param integer $id
      * @return mixed
      */
-    public function actionExport()
+    public function actionExportFile()
     {
         $post = \Yii::$app->request->post();
 
@@ -88,7 +88,7 @@ class ExportController extends Controller
         // var_dump($post['export_type']);
         // var_dump($post['export_timeout']);
         // exit;
-        return \myzero1\gdexport\helpers\Helper::exportSend($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $writerType = $post['export_type'], $timeout = $post['export_timeout']);
+        return \myzero1\gdexport\helpers\Helper::exportFile($post['export_columns'], $exportQuery=$post['export_query'], $exportSql=$post['export_sql'], $exportName=$post['export_name'], $timeout = $post['export_timeout']);
     }
 
     public function actionBigExport()
