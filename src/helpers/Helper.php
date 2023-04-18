@@ -2,79 +2,18 @@
 
 namespace myzero1\gdexport\helpers;
 
-use SuperClosure\Serializer;
 use yii\helpers\Html;
+use SuperClosure\Serializer;
+use yii2tech\csvgrid\CsvGrid;
 
 /**
- * The helpers for rbacp.
+ * The helpers for yii2-gridview-export.
  *
  * @author qinxuanwu
  *
  */
 class Helper {
     /**
-     * Get the module's name of rbacp.
-     *
-     * 调用实例：Helper::
-     *
-     * @param   void
-     * @return  string
-     **/
-    public static function columsFilter(array $colums){
-        $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn', 'yii\grid\SerialColumn'];
-
-        foreach ($colums as $k1 => $v1) {
-            if (is_array($v1)) {
-                if (array_key_exists("class", $v1)){
-                    if (in_array($v1["class"], $rm)) {
-                        unset($colums[$k1]);
-                    }
-                }
-            }
-        }
-
-        return $colums;
-    }
-
-    public static function serializeWithClosure(array $source){
-        $serializer = new Serializer();
-        $source = self::columsFilter($source);
-        foreach ($source as $k1 => $v1) {
-            if (is_array($v1)) {
-                foreach ($v1 as $k2 => $v2) {
-                   if ($v2 instanceof \Closure) {
-                        $source[$k1][$k2] = $serializer->serialize($v2);
-                    }
-                }
-            }
-        }
-
-        return json_encode($source);
-    }
-
-    public static function unserializeWithClosure($source){
-        $serializer = new Serializer();
-
-        $source = json_decode($source, true);
-
-        foreach ($source as $k1 => $v1) {
-            if (is_array($v1)) {
-                foreach ($v1 as $k2 => $v2) {
-                    if (!is_array($v2)) {
-                        if(strpos($v2,'SuperClosure\SerializableClosure') !== false){
-                            $source[$k1][$k2] = $serializer->unserialize($v2);
-                        }
-                    }
-                }
-            }
-        }
-
-        return $source;
-    }
-
-    /**
-     * Get the module's name of rbacp.
-     *
      * 调用实例：Helper::
      *
      * @param   string  dataProvider
@@ -124,13 +63,12 @@ class Helper {
         // return $formStr;
         $formStr = str_replace("\n", '', $formStr);
 
-        $js = <<<JS
-            $("html").append('$formStr');
+        $js = "
+            $('html').append('$formStr');
             $('#$id').click(function(){
-                console.log($('form[form-id="$id"]'));
-                $('form[form-id="$id"]').submit();
+                $('form[form-id=\"$id\"]').submit();
             });
-JS;
+        ";
 
         \Yii::$app->view->registerJs($js);
 
@@ -159,32 +97,31 @@ JS;
             $dataProvider = new \yii\data\ActiveDataProvider([
                 'query' => $query,
                 'pagination' => [
-                    'pageSize' => 999999999,
+                    'pageSize' => 1000, // export batch size
                 ],
             ]);
         } else if (!empty($exportSql)) {
             $sql = json_decode(base64_decode($exportSql), true);
-            $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
-
-            $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
             $dataProvider = new \yii\data\SqlDataProvider([
                 'sql' => $sql,
-                'totalCount' => $count,
                 'pagination' => [
-                    'pageSize' => 999999999,
+                    'pageSize' => 1000, // export batch size
                 ],
             ]);
         }
 
         $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+        $fileName = sprintf('%s-%s.zip', $exportName, date('Y-m-d H:i:s'));
 
-        $exporter = new \yii2tech\spreadsheet\Spreadsheet([
+        $exporter = new CsvGrid([
             'dataProvider' => $dataProvider,
             'columns' => $columns,
+            'maxEntriesPerFile' => 60000 + 1, // limit max rows per single file
+            'resultConfig' => [
+                'forceArchive' => true // always archive the results
+            ],
         ]);
-
-        $exporter->writerType = $writerType;
-        $exporter->send(sprintf('%s-%s.xls', $exportName, date('Y-m-d H:i:s')));
+        $exporter->export()->send($fileName);
     }
 
     public static function exportBigSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'xlsx', $timeout = 600){
@@ -299,18 +236,7 @@ JS;
         exit();
     }
 
-    public static function noScientificNotation($value){
-        // $value=12345678;
-        // $value=123456789011;
-        $value=$value . '';
-        $pattern='/^\d{9,}$/';
-        if (preg_match($pattern, $value)){
-            // 中文空格占位符
-            $value=$value.' ';
-        }
 
-        return $value;
-    }
 
     public static function remoteArrayDataProvider(
         $url, 
@@ -401,5 +327,82 @@ JS;
         }
 
         return $rsp;
+    }
+
+
+        /**
+     * Get the module's name of rbacp.
+     *
+     * 调用实例：Helper::
+     *
+     * @param   void
+     * @return  string
+     **/
+    public static function columsFilter(array $colums){
+        $rm = ['yii\grid\CheckboxColumn', 'yii\grid\ActionColumn', 'yii\grid\SerialColumn'];
+
+        foreach ($colums as $k1 => $v1) {
+            if (is_array($v1)) {
+                if (array_key_exists("class", $v1)){
+                    if (in_array($v1["class"], $rm)) {
+                        unset($colums[$k1]);
+                    }
+                }
+            }
+        }
+
+        return $colums;
+    }
+
+    // -------------
+    public static function serializeWithClosure(array $source){
+        $serializer = new Serializer();
+        $source = self::columsFilter($source);
+        foreach ($source as $k1 => $v1) {
+            if (is_array($v1)) {
+                foreach ($v1 as $k2 => $v2) {
+                   if ($v2 instanceof \Closure) {
+                        $source[$k1][$k2] = $serializer->serialize($v2);
+                    }
+                }
+            }
+        }
+
+        return json_encode($source);
+    }
+
+    public static function unserializeWithClosure($source){
+        $serializer = new Serializer();
+
+        $source = json_decode($source, true);
+
+        foreach ($source as $k1 => $v1) {
+            if (is_array($v1)) {
+                foreach ($v1 as $k2 => $v2) {
+                    if (!is_array($v2)) {
+                        if(strpos($v2,'SuperClosure\SerializableClosure') !== false){
+                            $source[$k1][$k2] = $serializer->unserialize($v2);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $source;
+    }
+
+    public static function noScientificNotation($value){
+        $value=$value . '';
+        $pattern='/^\d{9,}$/';
+        if (preg_match($pattern, $value)){
+            $value=self::force2str($value);
+        }
+
+        return $value;
+    }
+
+    public static function force2str($value){
+        // 中文空格占位符
+        return $value=$value.' ';
     }
 }

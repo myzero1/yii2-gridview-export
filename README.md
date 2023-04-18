@@ -122,7 +122,7 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
 
 |功能列表|完成进度|
 |---|---|
-|导出widget||
+|导出widget|基本完成|
 |文件导出||
 |数据流导出||
 |文件压缩加密||
