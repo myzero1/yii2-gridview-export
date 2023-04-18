@@ -94,8 +94,8 @@ class ExportController extends Controller
             $exportSql=$post['export_sql'], 
             $exportName=$post['export_name'], 
             $timeout=$post['export_timeout'],
-            $filePath='',
-            $pw=''
+            $pw='',
+            $filePath=''
         );
     }
 
@@ -108,8 +108,8 @@ class ExportController extends Controller
             $exportSql=$post['export_sql'], 
             $exportName=$post['export_name'], 
             $timeout=$post['export_timeout'],
-            $filePath='',
-            $pw=\Yii::$app->user->identity->username
+            $pw=\Yii::$app->user->identity->username,
+            $filePath=''
         );
     }
 

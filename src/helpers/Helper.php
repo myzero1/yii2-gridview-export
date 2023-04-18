@@ -79,7 +79,7 @@ class Helper {
 
     }
 
-    public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $filePath='', $pw=''){
+    public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath=''){
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
