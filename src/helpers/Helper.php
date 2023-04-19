@@ -184,7 +184,8 @@ class Helper {
         $itemsKeys=['data','items'],
         $totalKeys=['data','total'],
         $pageSizeKeys=['data','page_size'],
-        $dataProviderKey=''
+        $dataProviderKey='',
+        $extendDataKeys=['data','point_recharge']
     ){
         $ret = self::HttpCurl($url, $params, 'get',$timeout);
         if ($ret['code'] == 200) {
@@ -208,6 +209,12 @@ class Helper {
             }
             $size=$tmp;
 
+            $tmp=$data;
+            foreach ($extendDataKeys as $v) {
+                $tmp=$tmp[$v];
+            }
+            $extendData=$tmp;
+
             $dataProviderCnf=[
                 'allModels' => $items,
                 'totalCount' => $total,
@@ -219,7 +226,10 @@ class Helper {
                 $dataProviderCnf['key']=$dataProviderKey;
             }
 
-            return new \myzero1\gdexport\helpers\RemoteArrayDataProvider($dataProviderCnf);
+            return [
+                'dataProvider'=>new \myzero1\gdexport\helpers\RemoteArrayDataProvider($dataProviderCnf),
+                'extendData'=>$extendData,
+            ];
         }
     }
 
