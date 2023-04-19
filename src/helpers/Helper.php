@@ -14,7 +14,17 @@ use \PhpZip\ZipFile;
  *
  */
 class Helper {
-    public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出', $timeout=600){
+    public static function createExportForm(
+        $dataProvider, 
+        array $columns, 
+        $name, 
+        array $buttonOpts = ['class' => 'btn btn-info'], 
+        array $url=['/gdexport/export/export','id' => 1], 
+        $writerType='Xls', 
+        $buttonLable='导出', 
+        $timeout=600,
+        $confirmMsg=''
+    ){
         $sqlNew = '';
         $querySerialized = '';
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
@@ -53,7 +63,13 @@ class Helper {
         $js = "
             $('html').append('$formStr');
             $('#$id').click(function(){
-                $('form[form-id=\"$id\"]').submit();
+                if ('$confirmMsg'!=''){
+                    if (confirm('$confirmMsg')==true){
+                        $('form[form-id=\"$id\"]').submit();
+                    }
+                } else {
+                    $('form[form-id=\"$id\"]').submit();
+                }
             });
         ";
 
@@ -186,6 +202,7 @@ class Helper {
             $timeout = base64_decode($timeout);
         }
         \Yii::$app->session->close();
+        $timeout=300;
         set_time_limit($timeout);
         
         if ($columns != '') {
