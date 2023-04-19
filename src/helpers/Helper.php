@@ -114,7 +114,7 @@ class Helper {
         if ($exportName != 'exportName') {
             $exportName = base64_decode($exportName);
         }
-        $fileName = sprintf('%s-%s.zip', $exportName, date('Y-m-d_H-i-s'));
+        $fileName = sprintf('%s-%s.zip', $exportName, date('YmdHis'));
 
         if ($timeout != 600) {
             $timeout = base64_decode($timeout);
