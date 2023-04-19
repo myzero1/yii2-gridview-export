@@ -185,7 +185,7 @@ class Helper {
         $totalKeys=['data','total'],
         $pageSizeKeys=['data','page_size'],
         $dataProviderKey='',
-        $extendDataKeys=['data','point_recharge']
+        $extendDataKeys=['data','total_amount']
     ){
         $ret = self::HttpCurl($url, $params, 'get',$timeout);
         if ($ret['code'] == 200) {
@@ -193,25 +193,41 @@ class Helper {
 
             $tmp=$data;
             foreach ($itemsKeys as $v) {
-                $tmp=$tmp[$v];
+                if (isset($tmp[$v])) {
+                    $tmp=$tmp[$v];
+                }else{
+                    $tmp;
+                }
             }
             $items=$tmp;
 
             $tmp=$data;
             foreach ($totalKeys as $v) {
-                $tmp=$tmp[$v];
+                if (isset($tmp[$v])) {
+                    $tmp=$tmp[$v];
+                }else{
+                    $tmp;
+                }
             }
             $total=$tmp;
 
             $tmp=$data;
             foreach ($pageSizeKeys as $v) {
-                $tmp=$tmp[$v];
+                if (isset($tmp[$v])) {
+                    $tmp=$tmp[$v];
+                }else{
+                    $tmp;
+                }
             }
             $size=$tmp;
 
             $tmp=$data;
             foreach ($extendDataKeys as $v) {
-                $tmp=$tmp[$v];
+                if (isset($tmp[$v])) {
+                    $tmp=$tmp[$v];
+                }else{
+                    $tmp;
+                }
             }
             $extendData=$tmp;
 
