@@ -4,7 +4,7 @@ namespace myzero1\gdexport\helpers;
 
 use yii\helpers\Html;
 use SuperClosure\Serializer;
-use yii2tech\csvgrid\CsvGrid;
+use \myzero1\gdexport\csvgrid\CsvGrid;
 use \PhpZip\ZipFile;
 
 /**
