@@ -61,6 +61,15 @@ You can use it,anywhere in view as following:
 // 推荐使用下面这种方式,不会内存溢出
 // <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/big-export','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600);?>
 
+// 导出文件zip
+// <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export-file','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600);?>
+
+// 导出文件zip并加密
+// <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export-file-pw','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600);?>
+
+// 用数据流导出
+// <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export-stream','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600);?>
+
 ```
 ### Use custom router
 Use the custom router in ExportController.php, as following:
@@ -107,7 +116,9 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
     $timeout=600,
     $itemsKeys=['data','items'],
     $totalKeys=['data','total'],
-    $pageSizeKeys=['data','page_size']
+    $pageSizeKeys=['data','page_size'],
+    $dataProviderKey='',
+    $extendDataKeys=['data','total_amount']
 );
 
 ```
