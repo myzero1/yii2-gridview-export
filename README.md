@@ -16,13 +16,13 @@ The preferred way to install this module is through [composer](http://getcompose
 Either run
 
 ```
-php composer.phar require myzero1/yii2-gridview-export：1.*
+php composer.phar require myzero1/yii2-gridview-export：*
 ```
 
 or add
 
 ```
-"myzero1/yii2-gridview-export": "^1"
+"myzero1/yii2-gridview-export": "*"
 ```
 
 to the require section of your `composer.json` file.
