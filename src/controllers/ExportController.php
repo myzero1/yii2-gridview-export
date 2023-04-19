@@ -93,7 +93,9 @@ class ExportController extends Controller
         return \myzero1\gdexport\helpers\Helper::exportStream(
             $post['export_columns'], 
             $post['export_query'], 
-            $post['export_sql']
+            $post['export_sql'], 
+            $post['export_name'], 
+            $post['export_timeout']
         );
     }
 }
