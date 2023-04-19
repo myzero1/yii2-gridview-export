@@ -322,7 +322,7 @@ class Helper {
 
     public static function noScientificNotation($value){
         $value=$value . '';
-        $pattern='/^\d{9,}$/';
+        $pattern='/\d{9,}/';
         if (preg_match($pattern, $value)){
             $value=self::force2str($value);
         }
