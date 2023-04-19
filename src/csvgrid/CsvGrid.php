@@ -350,6 +350,86 @@ class CsvGrid extends Component
     }
 
     /**
+     * Performs data export.
+     * @return ExportResult export result.
+     * @throws InvalidConfigException if invalid {@see resultConfig} value.
+     */
+    public function exportStream()
+    {
+        /** @var ExportResult $result */
+        $result = Yii::createObject(array_merge([
+            'class' => ExportResult::className(),
+        ], $this->resultConfig));
+
+        $columnsInitialized = false;
+
+        $maxEntriesPerFile = false;
+        if (!empty($this->maxEntriesPerFile)) {
+            $maxEntriesPerFile = $this->maxEntriesPerFile;
+            if ($this->showFooter) {
+                $maxEntriesPerFile--;
+            }
+        }
+
+        $csvFile = null;
+        $rowIndex = 0;
+        while (($data = $this->batchModels()) !== false) {
+            list($models, $keys) = $data;
+
+            if (!$columnsInitialized) {
+                $this->initColumns(reset($models));
+                $columnsInitialized = true;
+            }
+
+            foreach ($models as $index => $model) {
+                if (!is_object($csvFile)) {
+                    $csvFile = $result->newCsvFile($this->csvFileConfig);
+                    if ($this->showHeader) {
+                        $csvFile->writeRow($this->composeHeaderRow());
+                    }
+                }
+
+                $key = isset($keys[$index]) ? $keys[$index] : $index;
+                $csvFile->writeRow($this->composeBodyRow($model, $key, $rowIndex));
+                $rowIndex++;
+
+                if ($maxEntriesPerFile !== false && $csvFile->entriesCount >= $maxEntriesPerFile) {
+                    if ($this->showFooter) {
+                        $csvFile->writeRow($this->composeFooterRow());
+                    }
+                    $csvFile->close();
+                    $csvFile = null;
+                }
+            }
+
+            $this->gc();
+        }
+
+        if (is_object($csvFile)) {
+            if ($this->showFooter) {
+                $csvFile->writeRow($this->composeFooterRow());
+            }
+            $csvFile->close();
+        }
+
+        if (empty($result->csvFiles)) {
+            $csvFile = $result->newCsvFile($this->csvFileConfig);
+            $csvFile->open();
+
+            if ($this->showHeader) {
+                $csvFile->writeRow($this->composeHeaderRow());
+            }
+            if ($this->showFooter) {
+                $csvFile->writeRow($this->composeFooterRow());
+            }
+
+            $csvFile->close();
+        }
+
+        return $result;
+    }
+
+    /**
      * Iterates over {@see query} or {@see dataProvider} returning data by batches.
      * @return array|false data batch: first element - models list, second model keys list.
      */
