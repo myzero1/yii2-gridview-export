@@ -22,7 +22,7 @@ php composer.phar require myzero1/yii2-gridview-export：1.*
 or add
 
 ```
-"myzero1/yii2-gridview-export": "~1"
+"myzero1/yii2-gridview-export": "^1"
 ```
 
 to the require section of your `composer.json` file.
@@ -117,20 +117,28 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
 
 |导出方式|优点|缺点|保护|
 |---|---|---|---|
-|文件(send,save)|可以压缩传输|反应慢（需要完全导出为文件后再下载）|是要zip加密压缩|
-|数据流(stream)|反应快（边生成边下载）|下载时间长不能压缩|使用web自动到的用户验证系统|
-
-|功能列表|完成进度|
-|---|---|
-|导出widget|基本完成|
-|文件导出||
-|数据流导出||
-|文件压缩加密||
-|RemoteDataProvider||
-|RemoteExport||
+|文件(exportFile)|可以压缩传输|反应慢（需要完全导出为文件后再下载）|是要zip加密压缩|
+|数据流(exportStream)|反应快（边生成边下载）|下载时间长不能压缩|使用web自动到的用户验证系统|
 
 
 ```
 基于 https://packagist.org/packages/yii2tech/csv-grid 进行加工完善
+
+```
+
+### Composer中~和^的含义
+```
+Laravel Framework 6.20.27
+6 表示主版本号
+20 表示次版本号
+27 表示修订号
+
+^和~的出现是为了对扩展包进行版本锁定的。它们的区别如下:
+^表示锁定主版本号。
+~表示锁定次版本号
+
+我们假定这个扩展的主版本号6,中间的次版本号最大是99，末尾的修订号是999。
+^6.20 表示版本的范围是6.20.0到6.99.999
+~6.20 表示版本的范围是6.20.0到6.20.999
 
 ```

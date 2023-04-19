@@ -65,6 +65,165 @@ class Helper {
 
     }
 
+    public static function exportSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'Xls', $timeout = 600){
+        if ($exportName != 'exportName') {
+            $exportName = base64_decode($exportName);
+        }
+        if ($writerType != 'Xls') {
+            $writerType = base64_decode($writerType);
+        }
+        if ($timeout != 600) {
+            $timeout = base64_decode($timeout);
+        }
+
+        \Yii::$app->session->close();
+        set_time_limit($timeout);
+
+        if (!empty($exportQuery)) {
+            $query = unserialize(json_decode(base64_decode($exportQuery)));
+            $dataProvider = new \yii\data\ActiveDataProvider([
+                'query' => $query,
+                'pagination' => [
+                    'pageSize' => 999999999,
+                ],
+            ]);
+        } else if (!empty($exportSql)) {
+            $sql = json_decode(base64_decode($exportSql), true);
+            $countSql = preg_replace('/^SELECT([^(FROM)])*FROM/i', 'SELECT COUNT(*) FROM', $sql);
+
+            $count = \Yii::$app->db->createCommand($countSql)->queryScalar();
+            $dataProvider = new \yii\data\SqlDataProvider([
+                'sql' => $sql,
+                'totalCount' => $count,
+                'pagination' => [
+                    'pageSize' => 999999999,
+                ],
+            ]);
+        }
+
+        $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+
+        $exporter = new \yii2tech\spreadsheet\Spreadsheet([
+            'dataProvider' => $dataProvider,
+            'columns' => $columns,
+        ]);
+
+        $exporter->writerType = $writerType;
+        $exporter->send(sprintf('%s-%s.xls', $exportName, date('Y-m-d H:i:s')));
+    }
+
+    public static function exportBigSend($columns, $exportQuery='', $exportSql='', $exportName='exportName', $writerType = 'xlsx', $timeout = 600){
+        if ('Content-type' != '') {
+            if ($exportName != 'exportName') {
+                $exportName = base64_decode($exportName);
+            }
+            if ($writerType != 'xlsx') {
+                $writerType = base64_decode($writerType);
+            }
+            if ($timeout != 600) {
+                $timeout = base64_decode($timeout);
+            }
+
+            $writerType='xlsx';
+
+            \Yii::$app->session->close();
+            set_time_limit($timeout);
+            $filename = sprintf('%s_%s.%s',$exportName, date('YmdHis'),$writerType);
+    
+            // https://www.cnblogs.com/jzxy/articles/16779621.html
+            header("Content-type:application/octet-stream");
+            header("Accept-Ranges:bytes");
+            header("Content-type:application/vnd.ms-excel,charset=UTF8-Bom");
+            header("Content-Disposition:attachment;filename=" . $filename);
+            header("Pragma: no-cache");
+            header("Expires: 0");
+        }
+        
+        $values=[];
+        if ('headers'!='') {
+            $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+    
+            $headers=[];
+            foreach ($columns as $k => $v) {
+                if (is_string($v)) {
+                    $headers[] = $v;
+                    $values[] = $v;
+                } else if (is_array($v)) {
+                    if (isset($v['header'])) {
+                        $headers[] = $v['header'];
+                    } else {
+                        $headers[] = isset($v['attribute'])?$v['attribute']:'';
+                    }
+    
+                    if (isset($v['value'])) {
+                        $values[] = $v['value'];
+                    } else if (isset($v['attribute'])) {
+                        $values[] = $v['attribute'];
+                    } else {
+                        $values[] = '';
+                    }
+                }
+            }
+
+            echo implode("\t",$headers)."\n";
+        }
+
+        if ('rows'!='') {
+            $pageSize = 1000;
+            // $pageSize = 3;
+            $page = 0;
+            $sql='';
+
+            if (!empty($exportQuery)) {
+                $query = unserialize(json_decode(base64_decode($exportQuery)));
+                $sql=$query->createCommand()->getRawSql();
+            } else if (!empty($exportSql)) {
+                $sql = json_decode(base64_decode($exportSql), true);
+            }
+
+            if ($sql=='') {
+                throw new \Exception('sql is empty');
+            }
+
+            $go=true;
+            while ($go) {
+                $sqlTmp=sprintf(
+                    '%s limit %d,%d',
+                    $sql,
+                    $page*$pageSize,
+                    $pageSize+1
+                );
+
+                $go=false;
+                $page=$page+1;
+
+                $all=\Yii::$app->db->createCommand($sqlTmp)->queryAll();
+                foreach ($all as $k => $r) {
+                    if ($k>=$pageSize) {
+                        $go=true;
+                        break;
+                    }
+
+                    $tmp=[];
+                    foreach ($values as $k => $v) {
+                        $t='';
+                        if(is_callable($v)){
+                            $t = $v($r);
+                        }else{
+                            $t = $r[$v];
+                        }
+
+                        $t=self::noScientificNotation($t);
+
+                        $tmp[] = $t;
+                    }
+                    echo implode("\t",$tmp)."\n";
+                }
+            }
+        }
+        exit();
+    }
+
     public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath=''){
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
