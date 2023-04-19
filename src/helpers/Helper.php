@@ -183,8 +183,8 @@ class Helper {
         $timeout=600,
         $itemsKeys=['data','items'],
         $totalKeys=['data','total'],
-        $pageSizeKeys=['data','page_size']
-        // $dataProviderKey='id'
+        $pageSizeKeys=['data','page_size'],
+        $dataProviderKey=''
     ){
         $ret = self::HttpCurl($url, $params, 'get',$timeout);
         if ($ret['code'] == 200) {
@@ -208,14 +208,18 @@ class Helper {
             }
             $size=$tmp;
 
-            return new \myzero1\gdexport\helpers\RemoteArrayDataProvider([
+            $dataProviderCnf=[
                 'allModels' => $items,
                 'totalCount' => $total,
                 'pagination' => [
                     'pageSize' => $size,
                 ],
-                // 'key' => $dataProviderKey,
-            ]);
+            ];
+            if ($dataProviderKey!='') {
+                $dataProviderCnf['key']=$dataProviderKey;
+            }
+
+            return new \myzero1\gdexport\helpers\RemoteArrayDataProvider($dataProviderCnf);
         }
     }
 
