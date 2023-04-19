@@ -12,8 +12,7 @@
     "minimum-stability": "stable",
     "require": {
         "yiisoft/yii2": "~2.0",
-        "yii2tech/csv-grid": "1.0.5",
-        "nelexa/zip": "3.1.11",
+        "nelexa/zip": "3.3.3",
         "jeremeamia/superclosure": "2.4.0"
     },
     "autoload": {
