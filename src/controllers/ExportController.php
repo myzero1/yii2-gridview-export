@@ -90,12 +90,10 @@ class ExportController extends Controller
         // exit;
         return \myzero1\gdexport\helpers\Helper::exportFile(
             $post['export_columns'], 
-            $exportQuery=$post['export_query'], 
-            $exportSql=$post['export_sql'], 
-            $exportName=$post['export_name'], 
-            $timeout=$post['export_timeout'],
-            $pw='',
-            $filePath=''
+            $post['export_query'], 
+            $post['export_sql'], 
+            $post['export_name'], 
+            $post['export_timeout']
         );
     }
 
@@ -104,13 +102,11 @@ class ExportController extends Controller
         $post = \Yii::$app->request->post();
         return \myzero1\gdexport\helpers\Helper::exportFile(
             $post['export_columns'], 
-            $exportQuery=$post['export_query'], 
-            $exportSql=$post['export_sql'], 
-            $exportName=$post['export_name'], 
-            $timeout=$post['export_timeout'],
-            $pw=\Yii::$app->user->identity->username,
-            // $filePath='t1'
-            $filePath=''
+            $post['export_query'], 
+            $post['export_sql'], 
+            $post['export_name'], 
+            $post['export_timeout'],
+            \Yii::$app->user->identity->username
         );
     }
 
@@ -119,12 +115,8 @@ class ExportController extends Controller
         $post = \Yii::$app->request->post();
         return \myzero1\gdexport\helpers\Helper::exportStream(
             $post['export_columns'], 
-            $exportQuery=$post['export_query'], 
-            $exportSql=$post['export_sql'], 
-            $exportName=$post['export_name'], 
-            $timeout=$post['export_timeout'],
-            $pw='',
-            $filePath=''
+            $post['export_query'], 
+            $post['export_sql']
         );
     }
 }
