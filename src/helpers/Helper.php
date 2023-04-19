@@ -14,20 +14,6 @@ use \PhpZip\ZipFile;
  *
  */
 class Helper {
-    /**
-     * 调用实例：Helper::
-     *
-     * @param   string  dataProvider
-     * @param   array   columns
-     * @param   string  name
-     * @param   array   buttonOpts    ['class' => 'btn btn-info']
-     * @param   array   url     ['/gdexport/export/export2','id' => 1]
-     * @param   string  writerType    Xls,Xlsx,Ods,Csv,Html,Tcpdf,Dompdf,Mpdf
-     * @param   string  buttonLable
-     *
-     * @return  string
-     **/
-
     public static function createExportForm($dataProvider, array $columns, $name, array $buttonOpts = ['class' => 'btn btn-info'], array $url=['/gdexport/export/export','id' => 1], $writerType='Xls', $buttonLable='导出', $timeout=600){
         $sqlNew = '';
         $querySerialized = '';
