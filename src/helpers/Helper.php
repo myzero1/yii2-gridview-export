@@ -202,7 +202,6 @@ class Helper {
             $timeout = base64_decode($timeout);
         }
         \Yii::$app->session->close();
-        $timeout=300;
         set_time_limit($timeout);
         
         if ($columns != '') {
