@@ -70,6 +70,9 @@ You can use it,anywhere in view as following:
 // 用数据流导出
 // <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export-stream','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600);?>
 
+// 用数据流导出，添加确认框
+// <?= \myzero1\gdexport\helpers\Helper::createExportForm($dataProvider, $columns, $name='导出文件名', $buttonOpts = ['class' => 'btn btn-info'], $url=['/gdexport/export/export-stream','id' => 1], $writerType='Xls', $buttonLable='导出大量数据', $timeout = 600, $confirmMsg = "请问你确认导出数据吗？");?>
+
 ```
 ### Use custom router
 Use the custom router in ExportController.php, as following:
