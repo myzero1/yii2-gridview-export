@@ -185,7 +185,7 @@ class Helper {
         if ($columns != '') {
             $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
         }
-        // $GridCnf['columns']=$columns;
+        $GridCnf['columns']=$columns;
 
         $exporter = new CsvGrid($GridCnf);
         $exporter->exportStream($exportName);
