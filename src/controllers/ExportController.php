@@ -117,14 +117,13 @@ class ExportController extends Controller
     public function actionExportStream()
     {
         $post = \Yii::$app->request->post();
-        return \myzero1\gdexport\helpers\Helper::exportFile(
+        return \myzero1\gdexport\helpers\Helper::exportStream(
             $post['export_columns'], 
             $exportQuery=$post['export_query'], 
             $exportSql=$post['export_sql'], 
             $exportName=$post['export_name'], 
             $timeout=$post['export_timeout'],
-            $pw=\Yii::$app->user->identity->username,
-            // $filePath='t1'
+            $pw='',
             $filePath=''
         );
     }

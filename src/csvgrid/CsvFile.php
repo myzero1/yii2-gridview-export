@@ -132,6 +132,16 @@ class CsvFile extends BaseObject
      * @param mixed $rowData raw data can be array or object.
      * @return int the number of bytes written.
      */
+    public function formatRow($rowData)
+    {
+        return $this->composeRowContent($rowData) . $this->rowDelimiter;
+    }
+
+    /**
+     * Writes the given row data into the file in CSV format.
+     * @param mixed $rowData raw data can be array or object.
+     * @return int the number of bytes written.
+     */
     public function writeRow($rowData)
     {
         if ($this->writeBom !== false && $this->entriesCount === 0) {

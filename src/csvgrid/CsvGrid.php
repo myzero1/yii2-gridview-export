@@ -354,23 +354,16 @@ class CsvGrid extends Component
      * @return ExportResult export result.
      * @throws InvalidConfigException if invalid {@see resultConfig} value.
      */
-    public function exportStream()
+    public function exportStream($exportName)
     {
         /** @var ExportResult $result */
         $result = Yii::createObject(array_merge([
             'class' => ExportResult::className(),
         ], $this->resultConfig));
 
+        $this->addStreamHeader($exportName);
+        
         $columnsInitialized = false;
-
-        $maxEntriesPerFile = false;
-        if (!empty($this->maxEntriesPerFile)) {
-            $maxEntriesPerFile = $this->maxEntriesPerFile;
-            if ($this->showFooter) {
-                $maxEntriesPerFile--;
-            }
-        }
-
         $csvFile = null;
         $rowIndex = 0;
         while (($data = $this->batchModels()) !== false) {
@@ -385,48 +378,37 @@ class CsvGrid extends Component
                 if (!is_object($csvFile)) {
                     $csvFile = $result->newCsvFile($this->csvFileConfig);
                     if ($this->showHeader) {
-                        $csvFile->writeRow($this->composeHeaderRow());
+                        echo $csvFile->formatRow($this->composeHeaderRow());
                     }
                 }
 
                 $key = isset($keys[$index]) ? $keys[$index] : $index;
-                $csvFile->writeRow($this->composeBodyRow($model, $key, $rowIndex));
+                echo $csvFile->formatRow($this->composeBodyRow($model, $key, $rowIndex));
                 $rowIndex++;
 
-                if ($maxEntriesPerFile !== false && $csvFile->entriesCount >= $maxEntriesPerFile) {
-                    if ($this->showFooter) {
-                        $csvFile->writeRow($this->composeFooterRow());
-                    }
-                    $csvFile->close();
-                    $csvFile = null;
+                if ($this->showFooter) {
+                    echo $csvFile->formatRow($this->composeFooterRow());
                 }
             }
 
             $this->gc();
         }
 
-        if (is_object($csvFile)) {
-            if ($this->showFooter) {
-                $csvFile->writeRow($this->composeFooterRow());
-            }
-            $csvFile->close();
-        }
+        exit();
+    }
 
-        if (empty($result->csvFiles)) {
-            $csvFile = $result->newCsvFile($this->csvFileConfig);
-            $csvFile->open();
+    protected function addStreamHeader($exportName)
+    {
+        \Yii::$app->session->close();
+        $filename = sprintf('%s_%s.csv',$exportName, date('YmdHis'));
 
-            if ($this->showHeader) {
-                $csvFile->writeRow($this->composeHeaderRow());
-            }
-            if ($this->showFooter) {
-                $csvFile->writeRow($this->composeFooterRow());
-            }
-
-            $csvFile->close();
-        }
-
-        return $result;
+        // https://www.cnblogs.com/jzxy/articles/16779621.html
+        header("Content-type:application/octet-stream");
+        header("Accept-Ranges:bytes");
+        header("Content-type:application/vnd.ms-excel,charset=UTF8-Bom");
+        header("Content-Disposition:attachment;filename=" . $filename);
+        header("Pragma: no-cache");
+        header("Expires: 0");
     }
 
     /**
