@@ -71,7 +71,7 @@ class CsvGrid extends Component
      * @var int the number of records to be fetched in each batch.
      * This property takes effect only in case of {@see query} usage.
      */
-    public $batchSize = 100;
+    public $batchSize = 1000;
     /**
      * @var array|Column[] grid column configuration. Each array element represents the configuration
      * for one particular grid column. For example:
