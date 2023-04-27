@@ -403,7 +403,7 @@ class CsvGrid extends Component
         $filename = sprintf('%s_%s.csv',$exportName, date('YmdHis'));
 
         header('Content-Encoding: UTF-8');
-        header("Content-type:application/csv;charset=UTF-8");
+        header("Content-type: application/csv; charset=UTF-8");
         header('Content-Disposition: attachment; filename="'.$filename.'";');
 
         // // https://zhuanlan.zhihu.com/p/449095577
