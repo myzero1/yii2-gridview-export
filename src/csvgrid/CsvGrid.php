@@ -402,13 +402,22 @@ class CsvGrid extends Component
         \Yii::$app->session->close();
         $filename = sprintf('%s_%s.csv',$exportName, date('YmdHis'));
 
-        // https://www.cnblogs.com/jzxy/articles/16779621.html
-        header("Content-type:application/octet-stream");
-        header("Accept-Ranges:bytes");
-        header("Content-type:application/vnd.ms-excel,charset=UTF8-Bom");
-        header("Content-Disposition:attachment;filename=" . $filename);
-        header("Pragma: no-cache");
-        header("Expires: 0");
+        header('Content-Encoding: UTF-8');
+        header("Content-type: application/csv; charset=UTF-8");
+        header('Content-Disposition: attachment; filename="'.$filename.'";');
+
+        // // https://zhuanlan.zhihu.com/p/449095577
+        // $f=fopen("php://memory",'w');
+        // fwrite($f, chr(0xEF).chr(0xBB).chr(0xBF));//加入BOM头
+        // fseek($f,0);
+        // // make php send the generated csv lines to the browser
+        // fpassthru($f);
+
+        // https://blog.csdn.net/weixin_41635750/article/details/109821604
+        //打开php标准输出流
+        $fp = fopen('php://output', 'a');
+        //添加BOM头，以UTF8编码导出CSV文件，如果文件头未添加BOM头，打开会出现乱码。
+        fwrite($fp, chr(0xEF).chr(0xBB).chr(0xBF));
     }
 
     /**
