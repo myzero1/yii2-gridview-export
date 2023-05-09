@@ -213,6 +213,47 @@ class Helper {
         $exporter->exportStream($exportName);
     }
 
+    public static function exportStreamCurl($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath='',$page){
+        if ($exportQuery!='') {
+            $query = unserialize(json_decode(base64_decode($exportQuery)));
+            $dataProvider = new \yii\data\ActiveDataProvider([
+                'query' => $query,
+                'pagination' => [
+                    'pageSize' => 1000, // export batch size
+                ],
+            ]);
+        } else if ($exportSql!='') {
+            $sql = json_decode(base64_decode($exportSql), true);
+            $dataProvider = new \yii\data\SqlDataProvider([
+                'sql' => $sql,
+                'pagination' => [
+                    'pageSize' => 1000, // export batch size
+                ],
+            ]);
+        }
+        $GridCnf=[
+            'dataProvider' => $dataProvider,
+        ];
+
+        if ($exportName != 'exportName') {
+            $exportName = base64_decode($exportName);
+        }
+
+        if ($timeout != 600) {
+            $timeout = base64_decode($timeout);
+        }
+        \Yii::$app->session->close();
+        set_time_limit($timeout);
+        
+        if ($columns != '') {
+            $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+        }
+        $GridCnf['columns']=$columns;
+
+        $exporter = new CsvGrid($GridCnf);
+        $exporter->exportStreamCurl($exportName,$page);
+    }
+
     public static function remoteArrayDataProvider(
         $url, 
         $params,

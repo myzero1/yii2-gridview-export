@@ -397,6 +397,47 @@ class CsvGrid extends Component
         exit();
     }
 
+    public function exportStreamCurl($exportName,$page)
+    {
+        /** @var ExportResult $result */
+        $result = Yii::createObject(array_merge([
+            'class' => ExportResult::className(),
+        ], $this->resultConfig));
+        
+        $columnsInitialized = false;
+        $csvFile = null;
+        $rowIndex = 0;
+        if (($data = $this->batchModelsCurl($page)) !== false) {
+            list($models, $keys) = $data;
+
+            if (!$columnsInitialized) {
+                $this->initColumns(reset($models));
+                $columnsInitialized = true;
+            }
+
+            foreach ($models as $index => $model) {
+                if (!is_object($csvFile)) {
+                    $csvFile = $result->newCsvFile($this->csvFileConfig);
+                    if ($this->showHeader) {
+                        echo $csvFile->formatRow($this->composeHeaderRow());
+                    }
+                }
+
+                $key = isset($keys[$index]) ? $keys[$index] : $index;
+                echo $csvFile->formatRow($this->composeBodyRow($model, $key, $rowIndex));
+                $rowIndex++;
+
+                if ($this->showFooter) {
+                    echo $csvFile->formatRow($this->composeFooterRow());
+                }
+            }
+
+            $this->gc();
+        }
+
+        exit();
+    }
+
     protected function addStreamHeader($exportName)
     {
         \Yii::$app->session->close();
@@ -438,6 +479,58 @@ class CsvGrid extends Component
                 ];
             }
         }
+
+        if (isset($this->batchInfo['queryIterator'])) {
+            /* @var $iterator \Iterator */
+            $iterator = $this->batchInfo['queryIterator'];
+            $iterator->next();
+
+            if ($iterator->valid()) {
+                return [$iterator->current(), []];
+            }
+
+            $this->batchInfo = null;
+            return false;
+        }
+
+        if (isset($this->batchInfo['pagination'])) {
+            /* @var $pagination \yii\data\Pagination|bool */
+            $pagination = $this->batchInfo['pagination'];
+            $page = $this->batchInfo['page'];
+
+            if ($pagination === false || $pagination->pageCount === 0) {
+                if ($page === 0) {
+                    $this->batchInfo['page']++;
+                    return [
+                        $this->dataProvider->getModels(),
+                        $this->dataProvider->getKeys()
+                    ];
+                }
+            } else {
+                if ($page < $pagination->pageCount) {
+                    $pagination->setPage($page);
+                    $this->dataProvider->prepare(true);
+                    $this->batchInfo['page']++;
+                    return [
+                        $this->dataProvider->getModels(),
+                        $this->dataProvider->getKeys()
+                    ];
+                }
+            }
+
+            $this->batchInfo = null;
+            return false;
+        }
+
+        return false;
+    }
+
+    protected function batchModelsCurl($page)
+    {
+        $this->batchInfo = [
+            'pagination' => $this->dataProvider->getPagination(),
+            'page' => $page,
+        ];
 
         if (isset($this->batchInfo['queryIterator'])) {
             /* @var $iterator \Iterator */
