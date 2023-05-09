@@ -71,7 +71,7 @@ class CsvGrid extends Component
      * @var int the number of records to be fetched in each batch.
      * This property takes effect only in case of {@see query} usage.
      */
-    public $batchSize = 10;
+    public $batchSize = 1000;
     /**
      * @var array|Column[] grid column configuration. Each array element represents the configuration
      * for one particular grid column. For example:
@@ -443,7 +443,7 @@ class CsvGrid extends Component
         exit();
     }
 
-    protected function addStreamHeader($exportName)
+    public static function addStreamHeader($exportName)
     {
         \Yii::$app->session->close();
         $filename = sprintf('%s_%s.csv',$exportName, date('YmdHis'));
@@ -535,6 +535,7 @@ class CsvGrid extends Component
         if ($this->batchInfo === null) {
             $pagination = $this->dataProvider->getPagination();
             $pagination->page=$page;
+            $pagination->pageSize=$this->batchSize;
             // $pagination->page=1;
             $this->batchInfo = [
                 'pagination' => $pagination,

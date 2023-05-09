@@ -104,11 +104,16 @@ class ExportController extends Controller
     public function actionExportStreamCurl()
     {
         \Yii::$app->session->close(); // 必须添加，否则使用curl在export中访问data时会卡死
+
+        set_time_limit(600);
+
+        \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader('test');
+
         $cookie=$_COOKIE;
         $cookie = http_build_query($_COOKIE);
         $cookie = str_replace(['&', '='], ['; ', '='], $cookie);  // 替换后的cookie查是正确的
         $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream-curl-data',true);
-        $timeout=1;
+        $timeout=5;
         $post_data = \Yii::$app->request->post();
         $page=0;
         
@@ -160,9 +165,9 @@ class ExportController extends Controller
                 $page=$page-1;
             }
 
-            if ($page>20) {
-                    $flag=false;
-            }
+            // if ($page>20) {
+            //         $flag=false;
+            // }
 
             var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch));
 
