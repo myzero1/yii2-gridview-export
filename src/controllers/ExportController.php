@@ -108,7 +108,7 @@ class ExportController extends Controller
         $cookie = http_build_query($_COOKIE);
         $cookie = str_replace(['&', '='], ['; ', '='], $cookie);  // 替换后的cookie查是正确的
         $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream-curl-data',true);
-        $timeout=5;
+        $timeout=1;
         $post_data = \Yii::$app->request->post();
         $page=0;
         
@@ -150,23 +150,21 @@ class ExportController extends Controller
 
             // var_dump($content);exit;
             
-
-            echo '--------';
-            if ($content=='') {
-                // $flag=false;
-                // echo '-----1---';
+            if ($content=='' && curl_error($ch)=='') {
+                $flag=false;
             } else {
                 echo $content;
-                // if ($page>2) {
-                //     $flag=false;
-                // }
             }
 
-            if ($page>10) {
+            if (curl_error($ch)!='') {
+                $page=$page-1;
+            }
+
+            if ($page>20) {
                     $flag=false;
             }
 
-            var_dump('==========',$flag,$page);
+            var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch));
 
 
         }
