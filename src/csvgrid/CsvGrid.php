@@ -71,7 +71,7 @@ class CsvGrid extends Component
      * @var int the number of records to be fetched in each batch.
      * This property takes effect only in case of {@see query} usage.
      */
-    public $batchSize = 1000;
+    public $batchSize = 10;
     /**
      * @var array|Column[] grid column configuration. Each array element represents the configuration
      * for one particular grid column. For example:
@@ -403,7 +403,12 @@ class CsvGrid extends Component
         $result = Yii::createObject(array_merge([
             'class' => ExportResult::className(),
         ], $this->resultConfig));
-        
+
+        // var_dump(2222222222);
+        // var_dump($page);
+        // var_dump($this->batchModelsCurl($page));
+        // exit;
+
         $columnsInitialized = false;
         $csvFile = null;
         $rowIndex = 0;
@@ -527,10 +532,20 @@ class CsvGrid extends Component
 
     protected function batchModelsCurl($page)
     {
-        $this->batchInfo = [
-            'pagination' => $this->dataProvider->getPagination(),
-            'page' => $page,
-        ];
+        if ($this->batchInfo === null) {
+            $pagination = $this->dataProvider->getPagination();
+            $pagination->page=$page;
+            // $pagination->page=1;
+            $this->batchInfo = [
+                'pagination' => $pagination,
+                'page' => 0
+            ];
+        }
+
+        // $this->batchInfo = [
+        //     'pagination' => $this->dataProvider->getPagination(),
+        //     'page' => $page,
+        // ];
 
         if (isset($this->batchInfo['queryIterator'])) {
             /* @var $iterator \Iterator */

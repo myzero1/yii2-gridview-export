@@ -218,19 +218,22 @@ class Helper {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
                 'query' => $query,
-                'pagination' => [
-                    'pageSize' => 1000, // export batch size
-                ],
+                // 'pagination' => [
+                //     'pageSize' => 1000, // export batch size
+                // ],
             ]);
         } else if ($exportSql!='') {
             $sql = json_decode(base64_decode($exportSql), true);
             $dataProvider = new \yii\data\SqlDataProvider([
                 'sql' => $sql,
-                'pagination' => [
-                    'pageSize' => 1000, // export batch size
-                ],
+                // 'pagination' => [
+                //     'pageSize' => 1000, // export batch size
+                // ],
             ]);
         }
+
+        // var_dump($dataProvider->query->createCommand()->getRawSql());exit;
+
         $GridCnf=[
             'dataProvider' => $dataProvider,
         ];
