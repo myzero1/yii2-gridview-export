@@ -107,7 +107,7 @@ class ExportController extends Controller
 
         set_time_limit(600);
 
-        \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader('test');
+        // \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader('test');
 
         $cookie=$_COOKIE;
         $cookie = http_build_query($_COOKIE);
@@ -133,7 +133,6 @@ class ExportController extends Controller
             
             $post_data['page']=$page;
             $post_string = http_build_query($post_data, '', '&');
-            $page=$page+1;
 
                // 启动一个CURL会话
             curl_setopt($ch, CURLOPT_URL, $url);     // 要访问的地址
@@ -144,8 +143,13 @@ class ExportController extends Controller
             //curl_setopt($curl, CURLOPT_AUTOREFERER, 1); // 自动设置Referer
             curl_setopt($ch, CURLOPT_POST, true); // 发送一个常规的Post请求
             curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);     // Post提交的数据包
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);     // 设置超时限制防止死循环
-            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);     // 设置超时限制防止死循环
+            // curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            // curl_setopt($ch, CURLOPT_TIMEOUT, 1); // 尝试建立链接的超时时间
+            // curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000*1); // 尝试建立链接的超时时间,这里是访问本地地址网络很快，可以设置小一些
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 1000*15);     // 链接保持的最长时间,设置超时限制防止死循环
+            curl_setopt($ch, CURLOPT_TIMEOUT, self::curlTimeOut()); // 尝试建立链接的超时时间,这里是访问本地地址网络很快，可以设置小一些
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::curlTimeOut()*10);     // 链接保持的最长时间,设置超时限制防止死循环
             //curl_setopt($curl, CURLOPT_HEADER, 0); // 显示返回的Header区域内容
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     // 获取的信息以文件流的形式返回 
             // curl_setopt($ch, CURLOPT_HTTPHEADER, $header); //模拟的header头
@@ -154,22 +158,33 @@ class ExportController extends Controller
             $content = curl_exec($ch);
 
             // var_dump($content);exit;
+
+            $curlErr = curl_error($ch);
             
-            if ($content=='' && curl_error($ch)=='') {
-                $flag=false;
-            } else {
+            if ($curlErr=='') {
                 echo $content;
+                $page=$page+1;
+
+                if ($content=='') {
+                    $flag=false;
+                }
+            } else {
+                if (strpos($curlErr,'timed out') !== false) {
+                    if ($page==0) {
+                        self::curlTimeOut(1);
+                    }
+                } else {
+                    echo $curlErr;
+                    exit;
+                }
             }
 
-            if (curl_error($ch)!='') {
-                $page=$page-1;
+            if ($page>4) {
+                    $flag=false;
             }
 
-            // if ($page>20) {
-            //         $flag=false;
-            // }
-
-            var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch));
+            // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
+            var_dump('==========', $page,self::curlTimeOut(),$curlErr);
 
 
         }
@@ -187,6 +202,20 @@ class ExportController extends Controller
         // );
 
         exit;
+    }
+
+    public static function curlTimeOut($inc=0){
+        if (!isset(\Yii::$app->params['CURLOPT_TIMEOUT'])) {
+            \Yii::$app->params['CURLOPT_TIMEOUT']=1;
+        } else {
+            \Yii::$app->params['CURLOPT_TIMEOUT'] = \Yii::$app->params['CURLOPT_TIMEOUT']+$inc;
+        }
+
+        if (\Yii::$app->params['CURLOPT_TIMEOUT'] > 15) {
+            \Yii::$app->params['CURLOPT_TIMEOUT'] = 15;
+        }
+
+        return \Yii::$app->params['CURLOPT_TIMEOUT'];
     }
 
     public function actionExportStreamCurlData()
