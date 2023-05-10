@@ -91,6 +91,26 @@ class ExportController extends Controller
 
     public function actionExportStream()
     {
+        \Yii::$app->session->close(); // 必须添加，否则使用curl在export中访问data时会卡死
+
+        $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream-curl-data',true);
+        $post = \Yii::$app->request->post();
+
+        if ($this->module->streamMode=='curl') {
+            return \myzero1\gdexport\helpers\Helper::exportStreamCurlWrap($post,$url);
+        } else {
+            return \myzero1\gdexport\helpers\Helper::exportStream(
+                $post['export_columns'], 
+                $post['export_query'], 
+                $post['export_sql'], 
+                $post['export_name'], 
+                $post['export_timeout']
+            );
+        }
+    }
+
+    public function actionExportStreamOld()
+    {
         $post = \Yii::$app->request->post();
         return \myzero1\gdexport\helpers\Helper::exportStream(
             $post['export_columns'], 
