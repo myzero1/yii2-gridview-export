@@ -213,6 +213,92 @@ class Helper {
         $exporter->exportStream($exportName);
     }
 
+    public static function exportStreamCurlWrap($post_data,$url){
+
+        // \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader('test');
+
+        $cookie=$_COOKIE;
+        $cookie = http_build_query($_COOKIE);
+        $cookie = str_replace(['&', '='], ['; ', '='], $cookie);  // 替换后的cookie查是正确的
+        $page=0;
+        
+        $flag = true;
+        $ch = curl_init(); 
+        while ($flag) { 
+            // $ch = curl_init();
+            // curl_setopt($ch, CURLOPT_URL, $url);
+            // // curl_setopt($ch, CURLOPT_HEADER, 1);
+            // curl_setopt($ch, CURLOPT_HEADER, 0);
+            // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            // curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+            // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+            // curl_setopt($ch,CURLOPT_USERAGENT,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
+            
+            $post_data['page']=$page;
+            $post_string = http_build_query($post_data, '', '&');
+
+               // 启动一个CURL会话
+            curl_setopt($ch, CURLOPT_URL, $url);     // 要访问的地址
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // 对认证证书来源的检查   // https请求 不验证证书和hosts
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);  // 从证书中检查SSL加密算法是否存在
+            curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']); // 模拟用户使用的浏览器
+            //curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1); // 使用自动跳转
+            //curl_setopt($curl, CURLOPT_AUTOREFERER, 1); // 自动设置Referer
+            curl_setopt($ch, CURLOPT_POST, true); // 发送一个常规的Post请求
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);     // Post提交的数据包
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);     // 设置超时限制防止死循环
+            // curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            // curl_setopt($ch, CURLOPT_TIMEOUT, 1); // 尝试建立链接的超时时间
+            // curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000*1); // 尝试建立链接的超时时间,这里是访问本地地址网络很快，可以设置小一些
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 1000*15);     // 链接保持的最长时间,设置超时限制防止死循环
+            curl_setopt($ch, CURLOPT_TIMEOUT, self::curlTimeOut()); // 尝试建立链接的超时时间,这里是访问本地地址网络很快，可以设置小一些
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::curlTimeOut()*10);     // 链接保持的最长时间,设置超时限制防止死循环
+            //curl_setopt($curl, CURLOPT_HEADER, 0); // 显示返回的Header区域内容
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     // 获取的信息以文件流的形式返回 
+            // curl_setopt($ch, CURLOPT_HTTPHEADER, $header); //模拟的header头
+            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+            
+            $content = curl_exec($ch);
+
+            // var_dump($content);exit;
+
+            $curlErr = curl_error($ch);
+            
+            if ($curlErr=='') {
+                echo $content;
+                $page=$page+1;
+
+                if ($content=='') {
+                    $flag=false;
+                }
+            } else {
+                if (strpos($curlErr,'timed out') !== false) {
+                    if ($page==0) {
+                        self::curlTimeOut(1);
+                    }
+                } else {
+                    echo $curlErr;
+                    exit;
+                }
+            }
+
+            if ($page>4) {
+                    $flag=false;
+            }
+
+            // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
+            var_dump('==========', $page,self::curlTimeOut(),$curlErr);
+
+
+        }
+
+        curl_close($ch);
+
+        exit;
+    }
+
     public static function exportStreamCurl($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath='',$page){
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
@@ -443,5 +529,19 @@ class Helper {
     public static function force2str($value){
         // 中文空格占位符
         return $value=$value.' ';
+    }
+
+    public static function curlTimeOut($inc=0){
+        if (!isset(\Yii::$app->params['CURLOPT_TIMEOUT'])) {
+            \Yii::$app->params['CURLOPT_TIMEOUT']=1;
+        } else {
+            \Yii::$app->params['CURLOPT_TIMEOUT'] = \Yii::$app->params['CURLOPT_TIMEOUT']+$inc;
+        }
+
+        if (\Yii::$app->params['CURLOPT_TIMEOUT'] > 15) {
+            \Yii::$app->params['CURLOPT_TIMEOUT'] = 15;
+        }
+
+        return \Yii::$app->params['CURLOPT_TIMEOUT'];
     }
 }

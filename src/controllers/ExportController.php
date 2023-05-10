@@ -105,6 +105,16 @@ class ExportController extends Controller
     {
         \Yii::$app->session->close(); // 必须添加，否则使用curl在export中访问data时会卡死
 
+        $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream-curl-data',true);
+        $post = \Yii::$app->request->post();
+
+        return \myzero1\gdexport\helpers\Helper::exportStreamCurlWrap($post,$url);
+    }
+
+    public function actionExportStreamCurlOld()
+    {
+        \Yii::$app->session->close(); // 必须添加，否则使用curl在export中访问data时会卡死
+
         set_time_limit(600);
 
         // \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader('test');
@@ -202,20 +212,6 @@ class ExportController extends Controller
         // );
 
         exit;
-    }
-
-    public static function curlTimeOut($inc=0){
-        if (!isset(\Yii::$app->params['CURLOPT_TIMEOUT'])) {
-            \Yii::$app->params['CURLOPT_TIMEOUT']=1;
-        } else {
-            \Yii::$app->params['CURLOPT_TIMEOUT'] = \Yii::$app->params['CURLOPT_TIMEOUT']+$inc;
-        }
-
-        if (\Yii::$app->params['CURLOPT_TIMEOUT'] > 15) {
-            \Yii::$app->params['CURLOPT_TIMEOUT'] = 15;
-        }
-
-        return \Yii::$app->params['CURLOPT_TIMEOUT'];
     }
 
     public function actionExportStreamCurlData()
