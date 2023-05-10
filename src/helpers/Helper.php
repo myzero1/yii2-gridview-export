@@ -292,7 +292,7 @@ class Helper {
             //         $flag=false;
             // }
 
-            var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
+            // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
             // var_dump('==========', $page,self::curlTimeOut(),$curlErr);
 
 

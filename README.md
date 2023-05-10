@@ -41,7 +41,7 @@ return [
         ......
         'gdexport' => [
             'class' => 'myzero1\gdexport\Module',
-            // 'streamMode' => 'curl' //gc,curl,default is gc
+            // 'streamMode' => 'curl' //gc,curl,default is gc,Curl can solve the memory leak of yii2 AR recorder 
         ],
         ......
     ],
