@@ -215,6 +215,8 @@ class Helper {
 
     public static function exportStreamCurlWrap($post_data,$url){
 
+        set_time_limit(base64_decode($post_data['export_timeout']));
+
         \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader(base64_decode($post_data['export_name']));
 
         $cookie=$_COOKIE;
@@ -223,8 +225,10 @@ class Helper {
         $page=0;
         
         $flag = true;
-        $ch = curl_init(); 
+        
         while ($flag) { 
+            $ch = curl_init(); 
+
             // $ch = curl_init();
             // curl_setopt($ch, CURLOPT_URL, $url);
             // // curl_setopt($ch, CURLOPT_HEADER, 1);
@@ -288,13 +292,15 @@ class Helper {
             //         $flag=false;
             // }
 
-            // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
+            var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
             // var_dump('==========', $page,self::curlTimeOut(),$curlErr);
 
 
+            curl_close($ch);
+            $ch = null;
         }
 
-        curl_close($ch);
+        
 
         exit;
     }
