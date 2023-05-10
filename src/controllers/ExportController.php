@@ -93,20 +93,34 @@ class ExportController extends Controller
     {
         \Yii::$app->session->close(); // 必须添加，否则使用curl在export中访问data时会卡死
 
-        $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream-curl-data',true);
+        $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream?z1action=z1_get_curl_data',true);
         $post = \Yii::$app->request->post();
 
-        if ($this->module->streamMode=='curl') {
-            return \myzero1\gdexport\helpers\Helper::exportStreamCurlWrap($post,$url);
-        } else {
-            return \myzero1\gdexport\helpers\Helper::exportStream(
+        if (\Yii::$app->request->get('z1action')=='z1_get_curl_data') {
+            return \myzero1\gdexport\helpers\Helper::exportStreamCurl(
                 $post['export_columns'], 
                 $post['export_query'], 
                 $post['export_sql'], 
                 $post['export_name'], 
-                $post['export_timeout']
+                $post['export_timeout'],
+                '',
+                '',
+                $post['page']
             );
+        } else {
+            if ($this->module->streamMode=='curl') {
+                return \myzero1\gdexport\helpers\Helper::exportStreamCurlWrap($post,$url);
+            } else {
+                return \myzero1\gdexport\helpers\Helper::exportStream(
+                    $post['export_columns'], 
+                    $post['export_query'], 
+                    $post['export_sql'], 
+                    $post['export_name'], 
+                    $post['export_timeout']
+                );
+            }
         }
+
     }
 
     public function actionExportStreamCurl()
