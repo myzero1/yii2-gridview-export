@@ -534,7 +534,13 @@ class Helper {
 
     public static function force2str($value){
         // 中文空格占位符
-        return $value=$value.' ';
+        return $value=$value."\t";
+    }
+
+    public static $force2numflag="\t";
+    public static function force2num($value){
+        $value=self::$force2numflag . $value . self::$force2numflag;
+        return $value;
     }
 
     public static function curlTimeOut($inc=0){

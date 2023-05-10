@@ -187,7 +187,20 @@ class CsvFile extends BaseObject
             return $value;
         }
 
-        return $this->enclosure . str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value) . $this->enclosure;
+        // return $this->enclosure . str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value) . $this->enclosure;
+
+        $length1=strlen($value);
+        $value= trim($value,\myzero1\gdexport\helpers\Helper::$force2numflag);
+        $length2=strlen($value);
+        $v = str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value);
+        
+        if ($length1-$length2!=2) {
+            if (preg_match('/^[0-9.]+$/', $value)){
+                $v = \myzero1\gdexport\helpers\Helper::$force2numflag . $v . \myzero1\gdexport\helpers\Helper::$force2numflag;
+           }
+        }
+
+        return $v;
     }
 
     /**
