@@ -229,21 +229,10 @@ class Helper {
         while ($flag) { 
             $ch = curl_init(); 
 
-            // $ch = curl_init();
-            // curl_setopt($ch, CURLOPT_URL, $url);
-            // // curl_setopt($ch, CURLOPT_HEADER, 1);
-            // curl_setopt($ch, CURLOPT_HEADER, 0);
-            // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            // curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-            // curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
-            // curl_setopt($ch,CURLOPT_USERAGENT,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36");
-            
             $post_data['page']=$page;
             $post_string = http_build_query($post_data, '', '&');
 
-               // 启动一个CURL会话
+            // 启动一个CURL会话
             curl_setopt($ch, CURLOPT_URL, $url);     // 要访问的地址
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // 对认证证书来源的检查   // https请求 不验证证书和hosts
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);  // 从证书中检查SSL加密算法是否存在
@@ -291,10 +280,8 @@ class Helper {
             // if ($page>4) {
             //         $flag=false;
             // }
-
+            
             // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
-            // var_dump('==========', $page,self::curlTimeOut(),$curlErr);
-
 
             curl_close($ch);
             $ch = null;
