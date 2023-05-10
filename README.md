@@ -41,6 +41,7 @@ return [
         ......
         'gdexport' => [
             'class' => 'myzero1\gdexport\Module',
+            // 'streamMode' => 'curl' //gc,curl,default is gc
         ],
         ......
     ],
