@@ -156,3 +156,9 @@ Laravel Framework 6.20.27
 ~6.20 表示版本的范围是6.20.0到6.20.999
 
 ```
+
+### release log
+```
+2023/05/10 14:50        2.1.0   add curl to exportStream 
+
+```
