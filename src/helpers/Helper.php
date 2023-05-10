@@ -524,7 +524,7 @@ class Helper {
 
     public static function noScientificNotation($value){
         $value=$value . '';
-        $pattern='/\d{9,}/';
+        $pattern='/^[0-9\.\-]{9,}$/';
         if (preg_match($pattern, $value)){
             $value=self::force2str($value);
         }
@@ -533,14 +533,7 @@ class Helper {
     }
 
     public static function force2str($value){
-        // 中文空格占位符
-        return $value=$value."\t";
-    }
-
-    public static $force2numflag="\t";
-    public static function force2num($value){
-        $value=self::$force2numflag . $value . self::$force2numflag;
-        return $value;
+        return $value="\t".$value."\t";
     }
 
     public static function curlTimeOut($inc=0){
