@@ -215,7 +215,7 @@ class Helper {
 
     public static function exportStreamCurlWrap($post_data,$url){
 
-        // \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader('test');
+        \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader(base64_decode($post_data['export_name']));
 
         $cookie=$_COOKIE;
         $cookie = http_build_query($_COOKIE);
@@ -284,12 +284,12 @@ class Helper {
                 }
             }
 
-            if ($page>4) {
-                    $flag=false;
-            }
+            // if ($page>4) {
+            //         $flag=false;
+            // }
 
             // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
-            var_dump('==========', $page,self::curlTimeOut(),$curlErr);
+            // var_dump('==========', $page,self::curlTimeOut(),$curlErr);
 
 
         }
