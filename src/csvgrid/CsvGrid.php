@@ -424,7 +424,9 @@ class CsvGrid extends Component
                 if (!is_object($csvFile)) {
                     $csvFile = $result->newCsvFile($this->csvFileConfig);
                     if ($this->showHeader) {
-                        echo $csvFile->formatRow($this->composeHeaderRow());
+                        if ($page==0) {
+                            echo $csvFile->formatRow($this->composeHeaderRow());
+                        }
                     }
                 }
 
