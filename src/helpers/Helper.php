@@ -213,6 +213,129 @@ class Helper {
         $exporter->exportStream($exportName);
     }
 
+    public static function exportStreamCurlWrap($post_data,$url){
+
+        set_time_limit(base64_decode($post_data['export_timeout']));
+
+        \myzero1\gdexport\csvgrid\CsvGrid::addStreamHeader(base64_decode($post_data['export_name']));
+
+        $cookie=$_COOKIE;
+        $cookie = http_build_query($_COOKIE);
+        $cookie = str_replace(['&', '='], ['; ', '='], $cookie);  // 替换后的cookie查是正确的
+        $page=0;
+        
+        $flag = true;
+        
+        while ($flag) { 
+            $ch = curl_init(); 
+
+            $post_data['page']=$page;
+            $post_string = http_build_query($post_data, '', '&');
+
+            // 启动一个CURL会话
+            curl_setopt($ch, CURLOPT_URL, $url);     // 要访问的地址
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);  // 对认证证书来源的检查   // https请求 不验证证书和hosts
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);  // 从证书中检查SSL加密算法是否存在
+            curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']); // 模拟用户使用的浏览器
+            //curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1); // 使用自动跳转
+            //curl_setopt($curl, CURLOPT_AUTOREFERER, 1); // 自动设置Referer
+            curl_setopt($ch, CURLOPT_POST, true); // 发送一个常规的Post请求
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);     // Post提交的数据包
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);     // 设置超时限制防止死循环
+            // curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            // curl_setopt($ch, CURLOPT_TIMEOUT, 1); // 尝试建立链接的超时时间
+            // curl_setopt($ch, CURLOPT_TIMEOUT_MS, 1000*1); // 尝试建立链接的超时时间,这里是访问本地地址网络很快，可以设置小一些
+            // curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 1000*15);     // 链接保持的最长时间,设置超时限制防止死循环
+            curl_setopt($ch, CURLOPT_TIMEOUT, self::curlTimeOut()); // 尝试建立链接的超时时间,这里是访问本地地址网络很快，可以设置小一些
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, self::curlTimeOut()*10);     // 链接保持的最长时间,设置超时限制防止死循环
+            //curl_setopt($curl, CURLOPT_HEADER, 0); // 显示返回的Header区域内容
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);     // 获取的信息以文件流的形式返回 
+            // curl_setopt($ch, CURLOPT_HTTPHEADER, $header); //模拟的header头
+            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+            
+            $content = curl_exec($ch);
+
+            // var_dump($content);exit;
+
+            $curlErr = curl_error($ch);
+            
+            if ($curlErr=='') {
+                echo $content;
+                $page=$page+1;
+
+                if ($content=='') {
+                    $flag=false;
+                }
+            } else {
+                if (strpos($curlErr,'timed out') !== false) {
+                    if ($page==0) {
+                        self::curlTimeOut(1);
+                    }
+                } else {
+                    echo $curlErr;
+                    exit;
+                }
+            }
+
+            // if ($page>4) {
+            //         $flag=false;
+            // }
+            
+            // var_dump('==========', memory_get_usage(),$flag,$page,time(),curl_error($ch),self::curlTimeOut());
+
+            curl_close($ch);
+            $ch = null;
+        }
+
+        
+
+        exit;
+    }
+
+    public static function exportStreamCurl($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath='',$page){
+        if ($exportQuery!='') {
+            $query = unserialize(json_decode(base64_decode($exportQuery)));
+            $dataProvider = new \yii\data\ActiveDataProvider([
+                'query' => $query,
+                // 'pagination' => [
+                //     'pageSize' => 1000, // export batch size
+                // ],
+            ]);
+        } else if ($exportSql!='') {
+            $sql = json_decode(base64_decode($exportSql), true);
+            $dataProvider = new \yii\data\SqlDataProvider([
+                'sql' => $sql,
+                // 'pagination' => [
+                //     'pageSize' => 1000, // export batch size
+                // ],
+            ]);
+        }
+
+        // var_dump($dataProvider->query->createCommand()->getRawSql());exit;
+
+        $GridCnf=[
+            'dataProvider' => $dataProvider,
+        ];
+
+        if ($exportName != 'exportName') {
+            $exportName = base64_decode($exportName);
+        }
+
+        if ($timeout != 600) {
+            $timeout = base64_decode($timeout);
+        }
+        \Yii::$app->session->close();
+        set_time_limit($timeout);
+        
+        if ($columns != '') {
+            $columns = \myzero1\gdexport\helpers\Helper::unserializeWithClosure(base64_decode($columns));
+        }
+        $GridCnf['columns']=$columns;
+
+        $exporter = new CsvGrid($GridCnf);
+        $exporter->exportStreamCurl($exportName,$page);
+    }
+
     public static function remoteArrayDataProvider(
         $url, 
         $params,
@@ -388,7 +511,7 @@ class Helper {
 
     public static function noScientificNotation($value){
         $value=$value . '';
-        $pattern='/\d{9,}/';
+        $pattern='/^[0-9\.\-]{9,}$/';
         if (preg_match($pattern, $value)){
             $value=self::force2str($value);
         }
@@ -397,7 +520,20 @@ class Helper {
     }
 
     public static function force2str($value){
-        // 中文空格占位符
-        return $value=$value.' ';
+        return $value="\t".$value."\t";
+    }
+
+    public static function curlTimeOut($inc=0){
+        if (!isset(\Yii::$app->params['CURLOPT_TIMEOUT'])) {
+            \Yii::$app->params['CURLOPT_TIMEOUT']=1;
+        } else {
+            \Yii::$app->params['CURLOPT_TIMEOUT'] = \Yii::$app->params['CURLOPT_TIMEOUT']+$inc;
+        }
+
+        if (\Yii::$app->params['CURLOPT_TIMEOUT'] > 15) {
+            \Yii::$app->params['CURLOPT_TIMEOUT'] = 15;
+        }
+
+        return \Yii::$app->params['CURLOPT_TIMEOUT'];
     }
 }

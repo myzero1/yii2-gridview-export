@@ -41,6 +41,7 @@ return [
         ......
         'gdexport' => [
             'class' => 'myzero1\gdexport\Module',
+            // 'streamMode' => 'curl' //gc,curl,default is gc,Curl can solve the memory leak of yii2 AR recorder 
         ],
         ......
     ],
@@ -153,5 +154,11 @@ Laravel Framework 6.20.27
 我们假定这个扩展的主版本号6,中间的次版本号最大是99，末尾的修订号是999。
 ^6.20 表示版本的范围是6.20.0到6.99.999
 ~6.20 表示版本的范围是6.20.0到6.20.999
+
+```
+
+### release log
+```
+2023/05/10 14:50        2.1.0   add curl to exportStream 
 
 ```
