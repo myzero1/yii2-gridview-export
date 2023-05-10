@@ -397,7 +397,55 @@ class CsvGrid extends Component
         exit();
     }
 
-    protected function addStreamHeader($exportName)
+    public function exportStreamCurl($exportName,$page)
+    {
+        /** @var ExportResult $result */
+        $result = Yii::createObject(array_merge([
+            'class' => ExportResult::className(),
+        ], $this->resultConfig));
+
+        // var_dump(2222222222);
+        // var_dump($page);
+        // var_dump($this->batchModelsCurl($page));
+        // exit;
+
+        $columnsInitialized = false;
+        $csvFile = null;
+        $rowIndex = 0;
+        if (($data = $this->batchModelsCurl($page)) !== false) {
+            list($models, $keys) = $data;
+
+            if (!$columnsInitialized) {
+                $this->initColumns(reset($models));
+                $columnsInitialized = true;
+            }
+
+            foreach ($models as $index => $model) {
+                if (!is_object($csvFile)) {
+                    $csvFile = $result->newCsvFile($this->csvFileConfig);
+                    if ($this->showHeader) {
+                        if ($page==0) {
+                            echo $csvFile->formatRow($this->composeHeaderRow());
+                        }
+                    }
+                }
+
+                $key = isset($keys[$index]) ? $keys[$index] : $index;
+                echo $csvFile->formatRow($this->composeBodyRow($model, $key, $rowIndex));
+                $rowIndex++;
+
+                if ($this->showFooter) {
+                    echo $csvFile->formatRow($this->composeFooterRow());
+                }
+            }
+
+            $this->gc();
+        }
+
+        exit();
+    }
+
+    public static function addStreamHeader($exportName)
     {
         \Yii::$app->session->close();
         $filename = sprintf('%s_%s.csv',$exportName, date('YmdHis'));
@@ -438,6 +486,69 @@ class CsvGrid extends Component
                 ];
             }
         }
+
+        if (isset($this->batchInfo['queryIterator'])) {
+            /* @var $iterator \Iterator */
+            $iterator = $this->batchInfo['queryIterator'];
+            $iterator->next();
+
+            if ($iterator->valid()) {
+                return [$iterator->current(), []];
+            }
+
+            $this->batchInfo = null;
+            return false;
+        }
+
+        if (isset($this->batchInfo['pagination'])) {
+            /* @var $pagination \yii\data\Pagination|bool */
+            $pagination = $this->batchInfo['pagination'];
+            $page = $this->batchInfo['page'];
+
+            if ($pagination === false || $pagination->pageCount === 0) {
+                if ($page === 0) {
+                    $this->batchInfo['page']++;
+                    return [
+                        $this->dataProvider->getModels(),
+                        $this->dataProvider->getKeys()
+                    ];
+                }
+            } else {
+                if ($page < $pagination->pageCount) {
+                    $pagination->setPage($page);
+                    $this->dataProvider->prepare(true);
+                    $this->batchInfo['page']++;
+                    return [
+                        $this->dataProvider->getModels(),
+                        $this->dataProvider->getKeys()
+                    ];
+                }
+            }
+
+            $this->batchInfo = null;
+            return false;
+        }
+
+        return false;
+    }
+
+    protected function batchModelsCurl($page)
+    {
+        if ($this->batchInfo === null) {
+            $pagination = $this->dataProvider->getPagination();
+            $pagination->page=$page;
+            $pagination->pageSize=$this->batchSize;
+            // $pagination->page=1;
+            $this->batchInfo = [
+                'pagination' => $pagination,
+                'page' => 0
+            ];
+        }
+
+        // $this->batchInfo = [
+        //     'pagination' => $this->dataProvider->getPagination(),
+        //     'page' => $page,
+        // ];
 
         if (isset($this->batchInfo['queryIterator'])) {
             /* @var $iterator \Iterator */

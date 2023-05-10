@@ -187,7 +187,13 @@ class CsvFile extends BaseObject
             return $value;
         }
 
-        return $this->enclosure . str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value) . $this->enclosure;
+        // return $this->enclosure . str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value) . $this->enclosure;
+
+        if (preg_match('/^[0-9\.\-]{9,}$/', $value)){ // 处理科学计数法
+            return "\t" . str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value) . "\t";
+        } else {
+            return $this->enclosure . str_replace($this->enclosure, str_repeat($this->enclosure, 2), $value) . $this->enclosure;
+        }
     }
 
     /**
