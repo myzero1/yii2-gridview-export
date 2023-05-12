@@ -109,7 +109,7 @@ class ExportController extends Controller
                 $post['page']
             );
         } else {
-            if ($this->module->streamMode=='curl') {
+            if ( isset(\Yii::$app->params['myzero1_gdexport_streamMode']) && \Yii::$app->params['myzero1_gdexport_streamMode'] == 'curl') {
                 return \myzero1\gdexport\helpers\Helper::exportStreamCurlWrap($post,$url);
             } else {
                 return \myzero1\gdexport\helpers\Helper::exportStream(
