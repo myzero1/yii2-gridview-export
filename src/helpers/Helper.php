@@ -536,4 +536,15 @@ class Helper {
 
         return \Yii::$app->params['CURLOPT_TIMEOUT'];
     }
+
+    public static function rewriteClass2GC(){
+        \Yii::$app->db->enableProfiling=false;
+        \Yii::$app->db->enableLogging=false;
+
+        $modelPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Model.php');
+        $queryPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Query.php');
+        \Yii::$classMap['yii\base\Model'] = $modelPath;
+        \Yii::$classMap['yii\db\Query'] = $queryPath;
+        
+    }
 }
