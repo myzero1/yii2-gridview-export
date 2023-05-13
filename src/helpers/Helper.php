@@ -543,6 +543,11 @@ class Helper {
 
         $modelPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Model.php');
         $queryPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Query.php');
+        $z1ComponentFrom=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Component.php');
+        $z1ComponentTo=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'yiisoft\yii2\base\Z1Component.php');
+        
+        copy($z1ComponentFrom,$z1ComponentTo);
+
         \Yii::$classMap['yii\base\Model'] = $modelPath;
         \Yii::$classMap['yii\db\Query'] = $queryPath;
         
