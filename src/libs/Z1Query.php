@@ -8,10 +8,10 @@
 namespace yii\db;
 
 use Yii;
-use yii\base\Z1Component;
 use yii\base\InvalidArgumentException;
 use yii\helpers\ArrayHelper;
 use yii\base\InvalidConfigException;
+use myzero1\gdexport\libs\Z1Component;
 
 /**
  * Query represents a SELECT SQL statement in a way that is independent of DBMS.

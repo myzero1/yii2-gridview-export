@@ -5,10 +5,17 @@
  * @license https://www.yiiframework.com/license/
  */
 
-namespace yii\base;
+namespace myzero1\gdexport\libs;
+// namespace yii\base;
 
 use Yii;
 use yii\helpers\StringHelper;
+use yii\base\BaseObject;
+use \yii\base\InvalidCallException;
+use \yii\base\UnknownPropertyException;
+use \yii\base\Behavior;
+use \yii\base\UnknownMethodException;
+use \yii\base\Event;
 
 /**
  * Component is the base class that implements the *property*, *event* and *behavior* features.
