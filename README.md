@@ -181,5 +181,6 @@ Laravel Framework 6.20.27
 ### release log
 ```
 2023/05/10 14:50        2.1.0   add curl to exportStream 
+2023/05/13 17:17        2.2.0   add rewrite_class to export 
 
 ```
