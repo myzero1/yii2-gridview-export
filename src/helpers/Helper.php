@@ -102,6 +102,8 @@ class Helper {
     }
 
     public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath=''){
+        self::rewriteClass2GC();
+        
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
@@ -173,6 +175,8 @@ class Helper {
     }
 
     public static function exportStream($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath=''){
+        self::rewriteClass2GC();
+        
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
