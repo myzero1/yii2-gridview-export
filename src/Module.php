@@ -7,8 +7,6 @@ namespace myzero1\gdexport;
  */
 class Module extends \yii\base\Module
 {
-    public $streamMode = 'gc'; // gc,curl
-
     /**
      * {@inheritdoc}
      */

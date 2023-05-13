@@ -93,7 +93,8 @@ class ExportController extends Controller
     {
         \Yii::$app->session->close(); // 必须添加，否则使用curl在export中访问data时会卡死
 
-        $url=\yii\helpers\Url::to($this->module->id.'/export/export-stream?z1action=z1_get_curl_data',true);
+        $moduleId=\Yii::$app->id==$this->module->id ?'':$this->module->id;
+        $url=\yii\helpers\Url::to($moduleId.'/export/export-stream?z1action=z1_get_curl_data',true);
         $post = \Yii::$app->request->post();
 
         if (\Yii::$app->request->get('z1action')=='z1_get_curl_data') {
@@ -108,7 +109,7 @@ class ExportController extends Controller
                 $post['page']
             );
         } else {
-            if ($this->module->streamMode=='curl') {
+            if ( isset(\Yii::$app->params['myzero1_gdexport_streamMode']) && \Yii::$app->params['myzero1_gdexport_streamMode'] == 'curl') {
                 return \myzero1\gdexport\helpers\Helper::exportStreamCurlWrap($post,$url);
             } else {
                 return \myzero1\gdexport\helpers\Helper::exportStream(
