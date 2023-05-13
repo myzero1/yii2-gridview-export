@@ -53,7 +53,7 @@ in params.php
 ```php
 return [
     ......
-    // 'myzero1_gdexport_streamMode' => 'curl' //gc,curl,default is gc,Curl can solve the memory leak of yii2 AR recorder 
+    // 'myzero1_gdexport_streamMode' => 'rewrite_class', //gc,rewrite_class,curl,default is gc,to solve the memory leak of yii2 AR recorder 
     ......
 ];
 ```
