@@ -102,6 +102,8 @@ class Helper {
     }
 
     public static function exportFile($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath=''){
+        self::rewriteClass2GC();
+        
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
@@ -173,6 +175,8 @@ class Helper {
     }
 
     public static function exportStream($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath=''){
+        self::rewriteClass2GC();
+        
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
@@ -535,5 +539,25 @@ class Helper {
         }
 
         return \Yii::$app->params['CURLOPT_TIMEOUT'];
+    }
+
+    public static function rewriteClass2GC(){
+        if (!(isset(\Yii::$app->params['myzero1_gdexport_streamMode'])&&\Yii::$app->params['myzero1_gdexport_streamMode']=='rewrite_class')) {
+            return;
+        }
+
+        \Yii::$app->db->enableProfiling=false;
+        \Yii::$app->db->enableLogging=false;
+
+        $modelPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Model.php');
+        $queryPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Query.php');
+        $z1ComponentFrom=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Component.php');
+        $z1ComponentTo=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'yiisoft\yii2\base\Z1Component.php');
+        
+        copy($z1ComponentFrom,$z1ComponentTo);
+
+        \Yii::$classMap['yii\base\Model'] = $modelPath;
+        \Yii::$classMap['yii\db\Query'] = $queryPath;
+        
     }
 }
