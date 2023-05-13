@@ -151,6 +151,16 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
 
 ```
 
+### myzero1_gdexport_streamMode 各个种参数解决yii2 AR recorder内存泄漏的优缺点
+
+|可选值|优点|缺点|注意|
+|---|---|---|---|
+|gc|使用gc_collect_cycles()回收内存，完全不影响现有逻辑|在某一些环境下gc_collect_cycles()不能回收内存，如php的一些docker环境，7.2-fpm-alpine，7.3-fpm-alpine ...|默认值|
+|rewrite_class|重写vendor\yiisoft\yii2\base\Component.php，对业务处理逻辑没有影响|若在调用重写函数（rewriteClass2GC）之前已经使用了yii\base\Model或yii\db\Query 会导致重写失败,如\common\models\User::find()|若默认参数不能解决问题建议使用这个参数|
+|curl|对原有代码没有任何侵入，通过curl分批次导出数据，每个curl请求完成自动回收内存，来达到防止内存泄漏的目的|CPU消耗大，只有actionExportStream实现了这个功能|cpu资源小的，不建议使用|
+
+
+
 ### Composer中~和^的含义
 ```
 Laravel Framework 6.20.27
