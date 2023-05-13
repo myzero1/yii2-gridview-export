@@ -542,6 +542,10 @@ class Helper {
     }
 
     public static function rewriteClass2GC(){
+        if (!(isset(\Yii::$app->params['myzero1_gdexport_streamMode'])&&\Yii::$app->params['myzero1_gdexport_streamMode']=='rewrite_class')) {
+            return;
+        }
+
         \Yii::$app->db->enableProfiling=false;
         \Yii::$app->db->enableLogging=false;
 
