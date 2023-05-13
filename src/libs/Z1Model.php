@@ -16,6 +16,7 @@ use Yii;
 use yii\helpers\Inflector;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
+use myzero1\gdexport\libs\Z1Component;
 
 /**
  * Model is the base class for data models.
