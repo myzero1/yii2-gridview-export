@@ -193,6 +193,7 @@ services:
       - ./slapd.d:/etc/ldap/slapd.d
     restart: always
 
+4   https://docs.docker.com/compose/compose-file/deploy/#resources       https://www.codetd.com/article/14276922
 
 
 
