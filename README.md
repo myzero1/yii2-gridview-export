@@ -164,6 +164,40 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
 
 
 
+`*****注意`
+```
+1   php 导出的时候一定要设置  ini_set('memory_limit',-1); 否则很容易就出现内存不足，而且 gc_collect_cycles() 回收不起作用。
+
+2   docker 容器中运行 php-fpm 一定要设置资源现在特别是内存的限制，否则会把资源耗尽
+
+3   docker-composer 中配置资源限制，由于有资源限制, 且没有使用swarm, 所以要加上--compatibility参数, 否则报错或者限制不生效    docker-compose --compatibility up -d ，实例如下
+version: '3.7'
+services:
+  openldap:
+    image: 10.10.xxx.54/public/openldap:1.3.0
+    container_name: openldap
+    environment:
+      - N9E_NID=22
+    ports:
+      - "389:389"
+      - "636:636"
+    deploy:
+      resources:
+         limits:
+            cpus: "2.00"
+            memory: 5G
+         reservations:
+            memory: 200M
+    volumes:
+      - ./ldap:/var/lib/ldap
+      - ./slapd.d:/etc/ldap/slapd.d
+    restart: always
+
+
+
+
+```
+
 ### Composer中~和^的含义
 ```
 Laravel Framework 6.20.27
