@@ -40,12 +40,12 @@ return [
     ......
     'bootstrap' => [
         ......
-        function(){\myzero1\gdexport\helpers\Helper::rewriteClass2GC();}, // If you want to set myzero1_gdexport_streamMode to rewrite_class, you need to add this line.
+        // function(){\myzero1\gdexport\helpers\Helper::rewriteClass2GC();}, // If you want to set myzero1_gdexport_streamMode to rewrite_class, you need to add this line.
         ......
     ],
     'modules' => [
         ......
-        'gdexport' => ['class' => 'myzero1\gdexport\Module',], // If using /gdexport/export/export as the export address, you need to add this line.
+        // 'gdexport' => ['class' => 'myzero1\gdexport\Module',], // If using /gdexport/export/export as the export address, you need to add this line.
         ......
     ],
     ......
@@ -195,6 +195,7 @@ services:
 
 4   https://docs.docker.com/compose/compose-file/deploy/#resources       https://www.codetd.com/article/14276922
 
+5   从2.2.3开始，只要把docker的内存限制一下，用默认配置，基本上就可以了满足导出需求。
 
 
 ```
