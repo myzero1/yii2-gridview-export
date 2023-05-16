@@ -542,18 +542,34 @@ class Helper {
     }
 
     public static function rewriteClass2GC(){
-        if (!(isset(\Yii::$app->params['myzero1_gdexport_streamMode'])&&\Yii::$app->params['myzero1_gdexport_streamMode']=='rewrite_class')) {
-            return;
+        $uri=$_SERVER['DOCUMENT_URI'];
+        $logPath=\Yii::getAlias('@runtime').DIRECTORY_SEPARATOR.'z1_export_log';
+        $log=[];
+        
+        if (is_file($logPath)) {
+            $log=json_decode(file_get_contents($logPath),true);
+        } else {
+            file_put_contents($logPath,'{}');
         }
 
-        \Yii::$app->db->enableProfiling=false;
-        \Yii::$app->db->enableLogging=false;
-
-        $modelPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Model.php');
-        $queryPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Query.php');
-
-        \Yii::$classMap['yii\base\Model'] = $modelPath;
-        \Yii::$classMap['yii\db\Query'] = $queryPath;
+        if (\Yii::$app->controller) {
+            $log[$uri]=time();
+            file_put_contents($logPath,json_encode($log));
+        } else {
+            if (isset($log[$uri]) && time()-$log[$uri]<60*60*24) {
+                if (!(isset(\Yii::$app->params['myzero1_gdexport_streamMode'])&&\Yii::$app->params['myzero1_gdexport_streamMode']=='rewrite_class')) {
+                    return;
+                }
         
+                \Yii::$app->db->enableProfiling=false;
+                \Yii::$app->db->enableLogging=false;
+        
+                $modelPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Model.php');
+                $queryPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Query.php');
+        
+                \Yii::$classMap['yii\base\Model'] = $modelPath;
+                \Yii::$classMap['yii\db\Query'] = $queryPath;
+            }
+        }
     }
 }
