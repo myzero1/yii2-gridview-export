@@ -542,6 +542,11 @@ class Helper {
     }
 
     public static function rewriteClass2GC(){
+        // php 导出的时候一定要设置  ini_set('memory_limit',-1); 否则很容易就出现内存不足，而且 gc_collect_cycles() 回收不起作用。
+        ini_set('memory_limit',-1);
+        \Yii::$app->db->enableProfiling=false;
+        \Yii::$app->db->enableLogging=false;
+
         $uri=$_SERVER['DOCUMENT_URI'];
         $logPath=\Yii::getAlias('@runtime').DIRECTORY_SEPARATOR.'z1_export_log';
         $log=[];
@@ -560,9 +565,6 @@ class Helper {
                 if (!(isset(\Yii::$app->params['myzero1_gdexport_streamMode'])&&\Yii::$app->params['myzero1_gdexport_streamMode']=='rewrite_class')) {
                     return;
                 }
-        
-                \Yii::$app->db->enableProfiling=false;
-                \Yii::$app->db->enableLogging=false;
         
                 $modelPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Model.php');
                 $queryPath=\Yii::getAlias('@vendor').DIRECTORY_SEPARATOR.str_replace('\\',DIRECTORY_SEPARATOR,'myzero1\yii2-gridview-export\src\libs\Z1Query.php');
