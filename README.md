@@ -40,12 +40,12 @@ return [
     ......
     'bootstrap' => [
         ......
-        function(){\myzero1\gdexport\helpers\Helper::rewriteClass2GC();}, // If you want to set myzero1_gdexport_streamMode to rewrite_class, you need to add this line.
+        // function(){\myzero1\gdexport\helpers\Helper::rewriteClass2GC();}, // If you want to set myzero1_gdexport_streamMode to rewrite_class, you need to add this line.
         ......
     ],
     'modules' => [
         ......
-        'gdexport' => ['class' => 'myzero1\gdexport\Module',], // If using /gdexport/export/export as the export address, you need to add this line.
+        // 'gdexport' => ['class' => 'myzero1\gdexport\Module',], // If using /gdexport/export/export as the export address, you need to add this line.
         ......
     ],
     ......
@@ -163,6 +163,42 @@ $provider = \myzero1\gdexport\helpers\Helper::remoteArrayDataProvider(
 |curl|对原有代码没有任何侵入，通过curl分批次导出数据，每个curl请求完成自动回收内存，来达到防止内存泄漏的目的|CPU消耗大，只有actionExportStream实现了这个功能|cpu资源小的，不建议使用|
 
 
+
+`*****注意`
+```
+1   php 导出的时候一定要设置  ini_set('memory_limit',-1); 否则很容易就出现内存不足，而且 gc_collect_cycles() 回收不起作用。
+
+2   docker 容器中运行 php-fpm 一定要设置资源现在特别是内存的限制，否则会把资源耗尽
+
+3   docker-composer 中配置资源限制，由于有资源限制, 且没有使用swarm, 所以要加上--compatibility参数, 否则报错或者限制不生效    docker-compose --compatibility up -d ，实例如下
+version: '3.7'
+services:
+  openldap:
+    image: 10.10.xxx.54/public/openldap:1.3.0
+    container_name: openldap
+    environment:
+      - N9E_NID=22
+    ports:
+      - "389:389"
+      - "636:636"
+    deploy:
+      resources:
+         limits:
+            cpus: "2.00"
+            memory: 5G
+         reservations:
+            memory: 200M
+    volumes:
+      - ./ldap:/var/lib/ldap
+      - ./slapd.d:/etc/ldap/slapd.d
+    restart: always
+
+4   https://docs.docker.com/compose/compose-file/deploy/#resources       https://www.codetd.com/article/14276922
+
+5   从2.2.3开始，只要把docker的内存限制一下，用默认配置，基本上就可以了满足导出需求。
+
+
+```
 
 ### Composer中~和^的含义
 ```
