@@ -28,6 +28,9 @@ class Helper {
         $sqlNew = '';
         $querySerialized = '';
         if ($dataProvider instanceof \yii\data\ActiveDataProvider) {
+            if (is_null($dataProvider->query->orderBy)) {
+                $dataProvider->query->orderBy = $dataProvider->sort->defaultOrder;
+            }
             $querySerialized = json_encode(serialize($dataProvider->query));
         } else {
             $sql = $dataProvider->sql;
