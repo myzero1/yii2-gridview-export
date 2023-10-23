@@ -489,6 +489,10 @@ class CsvGrid extends Component
 
         $ret = self::HttpCurl($url, $param, 'get');
         $data = json_decode($ret['data'],true);
+        // var_dump($ret);exit;
+        if ($ret['code']!=200) {
+            throw new \Exception($ret['msg']);
+        }
 
         $total=self::getValBykeys($data,$total_key);
         $items=self::getValBykeys($data,$items_key);
@@ -507,7 +511,10 @@ class CsvGrid extends Component
         for ($i=0; $i < $page_total; $i++) { 
             $i2=$i+1;
             $param[$page_param]=$i2;
-            $ret = \common\components\Helper::HttpCurl($url, $param, 'get');
+            $ret = self::HttpCurl($url, $param, 'get');
+            if ($ret['code']!=200) {
+                throw new \Exception($ret['msg']);
+            }
             // var_dump($ret);exit;
             $data = json_decode($ret['data'],true);
             $items=self::getValBykeys($data,$items_key);
