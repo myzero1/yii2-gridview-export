@@ -442,7 +442,29 @@ class CsvGrid extends Component
         // exit();
     }
 
-    // public static function exportStreamRemote($exportName,$url,$param,$columns,$total_key,$page_key,$page_size_key,$items_key)
+    /* 
+        \myzero1\gdexport\csvgrid\CsvGrid::exportStreamRemote(
+            $exportName='export-stream-remote.csv',
+            $url='http://127.0.0.1:36614/v1/points/deduct-list',
+            $param=['token'=>'mytoken','now_timestamp'=>'1671506537','page_size'=>'5','page'=>'1'],
+            $columns=[
+                [
+                    'header' => 'id',
+                    'attribute' => 'id',
+                    'value' => function ($row) {
+                        return $row['id'];
+                    },
+                ],
+                [
+                    'header' => 'c_id',
+                    'attribute' => 'c_id',
+                ],
+            ],
+            $page_param='page',
+            $page_size_param='page_size',
+            $total_key=['data','total'],
+            $items_key=['data','items']
+        ) */
     public static function exportStreamRemote(
         $exportName,
         $url,
