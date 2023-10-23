@@ -411,6 +411,13 @@ class CsvGrid extends Component
         $columnsInitialized = false;
         $csvFile = null;
         $rowIndex = 0;
+
+
+        // if (!is_object($csvFile)) {
+        //     $csvFile = $result->newCsvFile($this->csvFileConfig);
+        //     echo $csvFile->formatRow($this->composeHeaderRow());
+        // }
+        
         while (($data = $this->batchModels()) !== false) {
             list($models, $keys) = $data;
 
@@ -419,14 +426,13 @@ class CsvGrid extends Component
                 $columnsInitialized = true;
             }
 
-            foreach ($models as $index => $model) {
-                if (!is_object($csvFile)) {
-                    $csvFile = $result->newCsvFile($this->csvFileConfig);
-                    if ($this->showHeader && $start) {
-                        echo $csvFile->formatRow($this->composeHeaderRow());
-                    }
+            if (!is_object($csvFile)) {
+                $csvFile = $result->newCsvFile($this->csvFileConfig);
+                if ($this->showHeader && $start) {
+                    echo $csvFile->formatRow($this->composeHeaderRow());
                 }
-
+            }
+            foreach ($models as $index => $model) {
                 $key = isset($keys[$index]) ? $keys[$index] : $index;
                 echo $csvFile->formatRow($this->composeBodyRow($model, $key, $rowIndex));
                 $rowIndex++;
@@ -437,6 +443,12 @@ class CsvGrid extends Component
             }
 
             $this->gc();
+        }
+
+        if (!is_object($csvFile)) {
+            var_dump(11);exit;
+            $csvFile = $result->newCsvFile($this->csvFileConfig);
+            echo $csvFile->formatRow($this->composeHeaderRow());
         }
 
         // exit();
@@ -507,6 +519,10 @@ class CsvGrid extends Component
             'columns' => $columns,
         ];
         $exporter = new CsvGrid($GridCnf);
+
+        if ($page_total==0) {
+            $exporter->exportStreamArray($exportName,true,false);
+        }
 
         for ($i=0; $i < $page_total; $i++) { 
             $i2=$i+1;
