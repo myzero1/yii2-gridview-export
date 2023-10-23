@@ -397,6 +397,175 @@ class CsvGrid extends Component
         exit();
     }
 
+    public function exportStreamArray($exportName,$start=true,$end=true)
+    {
+        /** @var ExportResult $result */
+        $result = Yii::createObject(array_merge([
+            'class' => ExportResult::className(),
+        ], $this->resultConfig));
+
+        if ($start) {
+            $this->addStreamHeader($exportName);
+        }
+        
+        $columnsInitialized = false;
+        $csvFile = null;
+        $rowIndex = 0;
+        while (($data = $this->batchModels()) !== false) {
+            list($models, $keys) = $data;
+
+            if (!$columnsInitialized) {
+                $this->initColumns(reset($models));
+                $columnsInitialized = true;
+            }
+
+            foreach ($models as $index => $model) {
+                if (!is_object($csvFile)) {
+                    $csvFile = $result->newCsvFile($this->csvFileConfig);
+                    if ($this->showHeader && $start) {
+                        echo $csvFile->formatRow($this->composeHeaderRow());
+                    }
+                }
+
+                $key = isset($keys[$index]) ? $keys[$index] : $index;
+                echo $csvFile->formatRow($this->composeBodyRow($model, $key, $rowIndex));
+                $rowIndex++;
+
+                if ($this->showFooter && $end) {
+                    echo $csvFile->formatRow($this->composeFooterRow());
+                }
+            }
+
+            $this->gc();
+        }
+
+        // exit();
+    }
+
+    // public static function exportStreamRemote($exportName,$url,$param,$columns,$total_key,$page_key,$page_size_key,$items_key)
+    public static function exportStreamRemote(
+        $exportName,
+        $url,
+        $param,
+        $columns=[
+            [
+                'header' => 'id',
+                'attribute' => 'id',
+            ],
+        ],
+        $page_param='page',
+        $page_size_param='page_size',
+        $total_key=['data','total'],
+        $items_key=['data','items']
+    ) {
+        if (!isset($param[$page_param])) {
+            $param[$page_param]=1;
+        }
+        if (!isset($param[$page_size_param])) {
+            $param[$page_size_param]=30;
+        }
+
+        $ret = self::HttpCurl($url, $param, 'get');
+        $data = json_decode($ret['data'],true);
+
+        $total=self::getValBykeys($data,$total_key);
+        $items=self::getValBykeys($data,$items_key);
+        $page_total = ceil($total/$param[$page_size_param]);
+
+        // var_dump($page_size_param,$page_size,$page,$total,$page_total,$items,$ret);exit;
+ 
+        $GridCnf=[
+            'dataProvider' => new \yii\data\ArrayDataProvider([
+                'allModels' => $items,
+            ]),
+            'columns' => $columns,
+        ];
+        $exporter = new CsvGrid($GridCnf);
+
+        for ($i=0; $i < $page_total; $i++) { 
+            $i2=$i+1;
+            $param[$page_param]=$i2;
+            $ret = \common\components\Helper::HttpCurl($url, $param, 'get');
+            // var_dump($ret);exit;
+            $data = json_decode($ret['data'],true);
+            $items=self::getValBykeys($data,$items_key);
+
+            $GridCnf=[
+                'dataProvider' => new \yii\data\ArrayDataProvider([
+                    'allModels' => $items,
+                ]),
+                'columns' => $columns,
+            ];
+            $exporter = new CsvGrid($GridCnf);
+
+            if ($i==0) {
+                $exporter->exportStreamArray($exportName,true,false);
+            } else {
+                $exporter->exportStreamArray($exportName,false,false);
+            }
+        }
+
+        exit;
+    }
+
+    public static function getValBykeys($data,array $keys){
+        $tmp=$data;
+        foreach ($keys as $k => $v) {
+            $tmp=$tmp[$v];
+        }
+
+        return $tmp;
+    }
+
+    public static  function HttpCurl($url, $param, $method = "get", $timeout = 30)
+    {
+        try {
+            if (strtolower($method) == 'get') {
+                $url = $url . '?' . http_build_query($param);
+            }
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+            if (strtolower($method) == 'post') {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $param);
+            }
+
+            $result = curl_exec($ch);
+
+            $rsp = [
+                'code' => 200,
+                'msg' => 'ok',
+                'data' => '',
+            ];
+
+            //获取返回状态 200为正常
+            $http_status = curl_getinfo($ch);
+            if (isset($http_status['http_code'])) {
+                if ($http_status['http_code'] == "200") {
+                    $rsp['data'] = $result;
+                } else {
+                    $rsp['code'] = $http_status['http_code'];
+                    $rsp['msg'] = sprintf('http访问错误:%s', $http_status['http_code']);
+                    $rsp['data'] = curl_error($ch);
+                }
+            } else {
+                $rsp['code'] = 500;
+                $rsp['msg'] = 'curl执行错误';
+                $rsp['data'] = curl_error($ch);
+            }
+        } catch (\Exception $e) {
+            $rsp['code'] = 500;
+            $rsp['msg'] = $e->getMessage();
+        }
+
+        return $rsp;
+    }
+
     public function exportStreamCurl($exportName,$page)
     {
         /** @var ExportResult $result */
