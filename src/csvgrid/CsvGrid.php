@@ -374,13 +374,13 @@ class CsvGrid extends Component
                 $columnsInitialized = true;
             }
 
-            foreach ($models as $index => $model) {
-                if (!is_object($csvFile)) {
-                    $csvFile = $result->newCsvFile($this->csvFileConfig);
-                    if ($this->showHeader) {
-                        echo $csvFile->formatRow($this->composeHeaderRow());
-                    }
+            if (!is_object($csvFile)) {
+                $csvFile = $result->newCsvFile($this->csvFileConfig);
+                if ($this->showHeader) {
+                    echo $csvFile->formatRow($this->composeHeaderRow());
                 }
+            }
+            foreach ($models as $index => $model) {
 
                 $key = isset($keys[$index]) ? $keys[$index] : $index;
                 echo $csvFile->formatRow($this->composeBodyRow($model, $key, $rowIndex));
