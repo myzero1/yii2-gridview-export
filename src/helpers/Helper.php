@@ -3,9 +3,9 @@
 namespace myzero1\gdexport\helpers;
 
 use yii\helpers\Html;
-use SuperClosure\Serializer;
 use \myzero1\gdexport\csvgrid\CsvGrid;
 use \PhpZip\ZipFile;
+use function Opis\Closure\{serialize , unserialize};
 
 /**
  * The helpers for yii2-gridview-export.
@@ -299,7 +299,7 @@ class Helper {
         exit;
     }
 
-    public static function exportStreamCurl($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath='',$page){
+    public static function exportStreamCurl($columns='', $exportQuery='', $exportSql='', $exportName='exportName', $timeout=600, $pw='', $filePath='',$page=0){
         if ($exportQuery!='') {
             $query = unserialize(json_decode(base64_decode($exportQuery)));
             $dataProvider = new \yii\data\ActiveDataProvider([
@@ -481,13 +481,12 @@ class Helper {
     }
 
     public static function serializeWithClosure(array $source){
-        $serializer = new Serializer();
         $source = self::columsFilter($source);
         foreach ($source as $k1 => $v1) {
             if (is_array($v1)) {
                 foreach ($v1 as $k2 => $v2) {
                    if ($v2 instanceof \Closure) {
-                        $source[$k1][$k2] = $serializer->serialize($v2);
+                        $source[$k1][$k2] = serialize($v2);
                     }
                 }
             }
@@ -497,7 +496,6 @@ class Helper {
     }
 
     public static function unserializeWithClosure($source){
-        $serializer = new Serializer();
 
         $source = json_decode($source, true);
 
@@ -505,8 +503,8 @@ class Helper {
             if (is_array($v1)) {
                 foreach ($v1 as $k2 => $v2) {
                     if (!is_array($v2)) {
-                        if(strpos($v2,'SuperClosure\SerializableClosure') !== false){
-                            $source[$k1][$k2] = $serializer->unserialize($v2);
+                        if(strpos($v2,'Opis\Closure\Box') !== false){
+                            $source[$k1][$k2] = unserialize($v2);
                         }
                     }
                 }

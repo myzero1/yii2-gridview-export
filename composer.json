@@ -13,7 +13,7 @@
     "require": {
         "yiisoft/yii2": "~2.0",
         "nelexa/zip": "*",
-        "jeremeamia/superclosure": "*"
+        "opis/closure": "~4.3"
     },
     "autoload": {
         "psr-4": { "myzero1\\gdexport\\": "src/" }
