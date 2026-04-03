@@ -137,7 +137,10 @@ class CsvGrid extends Component
      *
      * @see CsvFile
      */
-    public $csvFileConfig = [];
+    // public $csvFileConfig = [];
+    public $csvFileConfig = [
+        'writeBom' => true,
+    ];
     /**
      * @var array configuration for {@see ExportResult} instance created in process result.
      *
